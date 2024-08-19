@@ -53,13 +53,13 @@ StkError stack_ctor (Stack *stk, size_t elem_size)
     DATA_HASH = get_hash ((uint8_t*) stk->data, CAPACITY * ELEM_SIZE);
 
     PRINT_END();
-    return STK_NO_ERROR;
+    return STK_ERROR_OK;
 }
 
 StkError stack_dtor (Stack *stk)
 {
     PRINT_BEGIN();
-    StkError error = STK_NO_ERROR;
+    StkError error = STK_ERROR_OK;
     error = stk_verifier (stk);
 
     if (error == STK_ERROR_STR_HASH    ||
@@ -77,7 +77,7 @@ StkError stack_dtor (Stack *stk)
     ELEM_SIZE = 0;
     STK_HASH = DATA_HASH = 0;
     PRINT_END();
-    return STK_NO_ERROR;
+    return STK_ERROR_OK;
 }
 
 void stack_dump (Stack *stk)
@@ -109,12 +109,12 @@ uint32_t get_hash (const uint8_t* key, size_t length)
 StkError stack_push (Stack *stk, const void* elem)
 {
     PRINT_BEGIN();
-    StkError error = STK_NO_ERROR;
+    StkError error = STK_ERROR_OK;
     error = stk_verifier (stk);
-    if (error != STK_NO_ERROR)
+    if (error != STK_ERROR_OK)
         return error;
     error = stk_realloc_up (stk);
-    if (error != STK_NO_ERROR)
+    if (error != STK_ERROR_OK)
         return error;
     memcpy ((char*) stk->data + SIZE * ELEM_SIZE, elem, stk->elem_size);
     ++(SIZE);
@@ -122,7 +122,7 @@ StkError stack_push (Stack *stk, const void* elem)
     STK_HASH = get_hash ((uint8_t*) stk, sizeof (Stack));
     DATA_HASH = get_hash ((uint8_t*) stk->data, CAPACITY * ELEM_SIZE);
     PRINT_END();
-    return STK_NO_ERROR;
+    return STK_ERROR_OK;
 }
 
 StkError stk_realloc_up (Stack* stk)
@@ -132,7 +132,7 @@ StkError stk_realloc_up (Stack* stk)
     {
         return stk_resize (stk, CAPACITY + CAPACITY_GROWTH_FACTOR);
     }
-    return STK_NO_ERROR;
+    return STK_ERROR_OK;
 }
 
 StkError stk_resize (Stack* stk, size_t new_capacity)
@@ -165,7 +165,7 @@ StkError stk_resize (Stack* stk, size_t new_capacity)
     }
     CAPACITY = new_capacity;
     PRINT_END();
-    return STK_NO_ERROR;
+    return STK_ERROR_OK;
 }
 
 void set_left_canary (void* new_ptr)
@@ -216,7 +216,7 @@ StkError stk_realloc_down (Stack *stk)
         return stk_resize (stk, CAPACITY / 2);
     }
     PRINT_END();
-    return STK_NO_ERROR;
+    return STK_ERROR_OK;
 }
 
 void stk_print_error (StkError error)
@@ -268,7 +268,7 @@ StkError stk_verifier (Stack* stk)
     STK_HASH = prev_stk_hash;
     DATA_HASH = prev_data_hash;
 
-    return STK_NO_ERROR;
+    return STK_ERROR_OK;
 
 }
 
@@ -276,7 +276,7 @@ const char* stk_get_error (StkError error)
 {
     switch (error)
     {
-        case STK_NO_ERROR:
+        case STK_ERROR_OK:
             return "Stack: Ошибок в работе функций не выявлено.";
         case STK_ERROR_REALLOC:
             return "Stack: Ошибка в работе функции realloc.";

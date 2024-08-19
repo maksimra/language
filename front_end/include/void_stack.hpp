@@ -1,5 +1,6 @@
 #ifndef VOID_STACK_HPP
 #define VOID_STACK_HPP
+
 #define STK_CANARY_PROTECTION
 
 #include <stdio.h>
@@ -18,7 +19,7 @@ typedef uint64_t can_type;
 
 enum StkError
 {
-    STK_NO_ERROR                   = 0,
+    STK_ERROR_OK                   = 0,
     STK_ERROR_REALLOC              = 1,
     STK_ERROR_POP                  = 2,
     STK_ERROR_CALLOC               = 3,
