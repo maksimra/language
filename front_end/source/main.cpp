@@ -1,9 +1,11 @@
 #include <stdio.h>
-#include "include/check_args.hpp"
-#include "include/front_end_struct.hpp"
+#include "../include/check_args.hpp"
+#include "../include/front_end.hpp"
 
 int main (const int argc, const char* argv[])
 {
+    int exit_code = EXIT_SUCCESS;
+
     FILE* log_file = fopen ("log_file.txt", "w");
     if (log_file == NULL)
         printf ("log_file wasn't open.\n");
@@ -21,42 +23,44 @@ int main (const int argc, const char* argv[])
     ArgsError args_error = args_check (argc, argv, necessary_n_args);
     if (args_print_if_error (args_error))
     {
+        exit_code = EXIT_FAILURE;
         fclose (log_file);
-        return 1;
+        return exit_code;
     }
 
     FrontError front_error = FRONT_ERROR_OK;
-    Frontend str = {};
+    FrontInfo front = {};
     const char* name_of_input_file  = argv[1];
     const char* name_of_output_file = argv[2];
-    front_error = frontend_ctor (&str, name_of_input_file, name_of_output_file);
+    front_error = frontend_ctor (&front, name_of_input_file, name_of_output_file);
     if (front_error)
     {
         frontend_print_error (front_error);
         fprintf (stderr, "Error initializing FrontStruct.\n");
-        fclose (log_file);
-        return 1;
+        exit_code = EXIT_FAILURE;
+        goto termination;
     }
 
-    front_error = frontend_pass (&str);
+    front_error = frontend_pass (&front);
     if (front_error)
     {
         frontend_print_error (front_error);
         fprintf (stderr, "Frontend error.\n");
-        frontend_dtor (&str);
-        fclose (log_file);
-        return 1;
+        frontend_dtor (&front);
+        exit_code = EXIT_FAILURE;
+        goto termination;
     }
 
-    front_error = frontend_dtor (&str);
+    front_error = frontend_dtor (&front);
     if (front_error)
     {
         frontend_print_error (front_error);
         fprintf (stderr, "Error dtor FrontStruct.\n");
-        fclose (log_file);
-        return 1;
+        exit_code = EXIT_FAILURE;
+        goto termination;
     }
 
+termination:
     fclose (log_file);
-    return 0;
+    return exit_code;
 }
