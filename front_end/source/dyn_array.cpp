@@ -1,33 +1,60 @@
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
 #include "../include/dyn_array.hpp"
 #include "../include/print_in_log.hpp"
 
-DynArrError dyn_array_ctor (Darray* darr, size_t capacity)
+const size_t UP_COEFF = 2;
+
+static FILE* log_file = stderr;
+
+void dyn_array_set_log_file (FILE* file)
+{
+    log_file = file;
+}
+
+DynArrError dyn_array_ctor (Darray* darr, size_t capacity, size_t elem_size)
 {
     PRINT_BEGIN();
-    if (darr != NULL)
+    assert (darr);
+
+    if (darr->data != NULL)
         return ARR_ERROR_SECOND_CTOR;
 
     if (capacity <= 0)
-        return ARR_ERROR_NEGATIVE_SIZE;
+        return ARR_ERROR_NEGATIVE_CAPACITY;
 
-    dyn_array_resize (darr, capacity);
+    if (elem_size <= 0)
+        return ARR_ERROR_NEGATIVE_ELEM_SIZE;
+
+    darr->elem_size = elem_size;
     darr->size = 0;
     PRINT_END();
-    return ARR_ERROR_OK;
+    return dyn_array_resize (darr, capacity);
 }
 
-DynArrError dyn_array_push (Darray* darr, darray_elem element)
+DynArrError dyn_array_push (Darray* darr, void* element)
 {
     PRINT_BEGIN();
-    DynArrError error = ARR_ERROR_OK;
-
-    if (darr->size >= darr->capacity)
-        error = dyn_array_resize (darr, darr->capacity * 2);
+    DynArrError error = dyn_array_verifier (darr);
 
     if (error)
         return error;
 
-    (darr->data)[darr->size] = element;
+    if (element == NULL)
+        return ARR_ERROR_NULL_ELEM;
+
+    if (darr->size >= darr->capacity)
+    {
+        error = dyn_array_resize (darr, darr->capacity * UP_COEFF);
+        if (error)
+            return error;
+    }
+
+    memcpy ((char*) darr->data + darr->size * darr->elem_size,
+            element,
+            darr->elem_size);
+
     (darr->size)++;
 
     PRINT_END();
@@ -37,17 +64,17 @@ DynArrError dyn_array_push (Darray* darr, darray_elem element)
 DynArrError dyn_array_resize (Darray* darr, size_t new_capacity)
 {
     PRINT_BEGIN();
-    darray_elem* temp = NULL;
+    void* temp = NULL;
     if (darr->data == NULL)
     {
-        temp = (darray_elem*) calloc (sizeof (darray_elem), new_capacity);
+        temp = calloc (new_capacity, darr->elem_size);
 
         if (temp == NULL)
             return ARR_ERROR_CALLOC;
     }
     else
     {
-        temp = (darray_elem*) realloc (darr->data, new_capacity);
+        temp = realloc (darr->data, new_capacity * darr->elem_size);
         if (temp == NULL)
             return ARR_ERROR_REALLOC;
     }
@@ -60,13 +87,68 @@ DynArrError dyn_array_resize (Darray* darr, size_t new_capacity)
 DynArrError dyn_array_dtor (Darray* darr)
 {
     PRINT_BEGIN();
-    if (darr == NULL)
-        return ARR_ERROR_NULL_PTR_DARR;
+    assert (darr);
+
     if (darr->data == NULL)
         return ARR_ERROR_NULL_PTR_DATA;
     free (darr->data);
     darr->size = 0;
-    darr-capacity = 0;
+    darr->capacity = 0;
     PRINT_END();
     return ARR_ERROR_OK;
+}
+
+DynArrError dyn_array_verifier (Darray* darr)
+{
+    PRINT_BEGIN();
+    if (darr == NULL)
+        return ARR_ERROR_NULL_PTR_DARR;
+
+    if (darr->capacity <= 0)
+        return ARR_ERROR_NEGATIVE_CAPACITY;
+
+    if (darr->data == NULL)
+        return ARR_ERROR_NULL_PTR_DATA;
+
+    if (darr->size > darr->capacity)
+        return ARR_ERROR_SIZE_BIGGER_CAPACITY;
+
+    PRINT_END();
+    return ARR_ERROR_OK;
+}
+
+const char* dyn_array_get_error (DynArrError error)
+{
+    switch (error)
+    {
+        case ARR_ERROR_OK:
+            return "Stack: Ошибок в работе функций не выявлено.";
+        case ARR_ERROR_REALLOC:
+            return "DynArr: Ошибка в работе функции realloc.";
+        case ARR_ERROR_CALLOC:
+            return "DynArr: Ошибка выделения памяти (calloc).";
+        case ARR_ERROR_NEGATIVE_ELEM_SIZE:
+            return "DynArr: Отрицательное значение elem_size.";
+        case ARR_ERROR_SECOND_CTOR:
+            return "DynArr: Массив уже был создан.";
+        case ARR_ERROR_NULL_PTR_DATA:
+            return "DynArr: Нулевой указатель data";
+        case ARR_ERROR_NULL_PTR_DARR:
+            return "DynArr: Передан нулевой указатель на массив.";
+        case ARR_ERROR_SIZE_BIGGER_CAPACITY:
+            return "DynArr: Size больше, чем capacity.";
+        case ARR_ERROR_NULL_ELEM:
+            return "DynArr: Нулевой указатель на элемент.";
+        case ARR_ERROR_NEGATIVE_SIZE:
+            return "DynArr: Size оказался отрицательным.";
+        case ARR_ERROR_NEGATIVE_CAPACITY:
+            return "DynArr: Отрицательный capacity.";
+        default:
+            return "DynArr: Нужной ошибки не найдено...";
+    }
+}
+
+void dyn_array_print_error (DynArrError error)
+{
+    PRINT ("%s\n", dyn_array_get_error (error));
 }

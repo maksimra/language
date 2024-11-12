@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "../include/check_args.hpp"
 #include "../include/front_end.hpp"
 
@@ -19,10 +20,11 @@ int main (const int argc, const char* argv[])
     args_set_log_file     (log_file);
     frontend_set_log_file (log_file);
 
-    const int necessary_n_args = 2;
+    const int necessary_n_args = 3;
     ArgsError args_error = args_check (argc, argv, necessary_n_args);
     if (args_print_if_error (args_error))
     {
+    fprintf (stderr, "I am here\n");
         exit_code = EXIT_FAILURE;
         fclose (log_file);
         return exit_code;
@@ -46,19 +48,19 @@ int main (const int argc, const char* argv[])
     {
         frontend_print_error (front_error);
         fprintf (stderr, "Frontend error.\n");
-        frontend_dtor (&front);
+        // frontend_dtor (&front);
         exit_code = EXIT_FAILURE;
         goto termination;
     }
 
-    front_error = frontend_dtor (&front);
-    if (front_error)
-    {
-        frontend_print_error (front_error);
-        fprintf (stderr, "Error dtor FrontStruct.\n");
-        exit_code = EXIT_FAILURE;
-        goto termination;
-    }
+    // front_error = frontend_dtor (&front);
+    // if (front_error)
+    // {
+    //     frontend_print_error (front_error);
+    //     fprintf (stderr, "Error dtor FrontStruct.\n");
+    //     exit_code = EXIT_FAILURE;
+    //     goto termination;
+    // }
 
 termination:
     fclose (log_file);

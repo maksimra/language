@@ -1,4 +1,8 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/Language.dir/check_args.cpp.o"
+  "CMakeFiles/Language.dir/check_args.cpp.o.d"
+  "CMakeFiles/Language.dir/dyn_array.cpp.o"
+  "CMakeFiles/Language.dir/dyn_array.cpp.o.d"
   "CMakeFiles/Language.dir/file_processing.cpp.o"
   "CMakeFiles/Language.dir/file_processing.cpp.o.d"
   "CMakeFiles/Language.dir/front_end.cpp.o"
@@ -9,8 +13,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/Language.dir/main.cpp.o.d"
   "CMakeFiles/Language.dir/skip_space.cpp.o"
   "CMakeFiles/Language.dir/skip_space.cpp.o.d"
-  "CMakeFiles/Language.dir/void_stack.cpp.o"
-  "CMakeFiles/Language.dir/void_stack.cpp.o.d"
   "Language"
   "Language.pdb"
 )

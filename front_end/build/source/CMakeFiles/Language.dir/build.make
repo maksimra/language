@@ -111,19 +111,19 @@ source/CMakeFiles/Language.dir/lexer.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Language.dir/lexer.cpp.s"
 	cd /home/maksim/Projects/language/front_end/build/source && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/maksim/Projects/language/front_end/source/lexer.cpp -o CMakeFiles/Language.dir/lexer.cpp.s
 
-source/CMakeFiles/Language.dir/void_stack.cpp.o: source/CMakeFiles/Language.dir/flags.make
-source/CMakeFiles/Language.dir/void_stack.cpp.o: ../source/void_stack.cpp
-source/CMakeFiles/Language.dir/void_stack.cpp.o: source/CMakeFiles/Language.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/maksim/Projects/language/front_end/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object source/CMakeFiles/Language.dir/void_stack.cpp.o"
-	cd /home/maksim/Projects/language/front_end/build/source && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT source/CMakeFiles/Language.dir/void_stack.cpp.o -MF CMakeFiles/Language.dir/void_stack.cpp.o.d -o CMakeFiles/Language.dir/void_stack.cpp.o -c /home/maksim/Projects/language/front_end/source/void_stack.cpp
+source/CMakeFiles/Language.dir/dyn_array.cpp.o: source/CMakeFiles/Language.dir/flags.make
+source/CMakeFiles/Language.dir/dyn_array.cpp.o: ../source/dyn_array.cpp
+source/CMakeFiles/Language.dir/dyn_array.cpp.o: source/CMakeFiles/Language.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/maksim/Projects/language/front_end/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object source/CMakeFiles/Language.dir/dyn_array.cpp.o"
+	cd /home/maksim/Projects/language/front_end/build/source && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT source/CMakeFiles/Language.dir/dyn_array.cpp.o -MF CMakeFiles/Language.dir/dyn_array.cpp.o.d -o CMakeFiles/Language.dir/dyn_array.cpp.o -c /home/maksim/Projects/language/front_end/source/dyn_array.cpp
 
-source/CMakeFiles/Language.dir/void_stack.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Language.dir/void_stack.cpp.i"
-	cd /home/maksim/Projects/language/front_end/build/source && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/maksim/Projects/language/front_end/source/void_stack.cpp > CMakeFiles/Language.dir/void_stack.cpp.i
+source/CMakeFiles/Language.dir/dyn_array.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Language.dir/dyn_array.cpp.i"
+	cd /home/maksim/Projects/language/front_end/build/source && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/maksim/Projects/language/front_end/source/dyn_array.cpp > CMakeFiles/Language.dir/dyn_array.cpp.i
 
-source/CMakeFiles/Language.dir/void_stack.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Language.dir/void_stack.cpp.s"
-	cd /home/maksim/Projects/language/front_end/build/source && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/maksim/Projects/language/front_end/source/void_stack.cpp -o CMakeFiles/Language.dir/void_stack.cpp.s
+source/CMakeFiles/Language.dir/dyn_array.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Language.dir/dyn_array.cpp.s"
+	cd /home/maksim/Projects/language/front_end/build/source && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/maksim/Projects/language/front_end/source/dyn_array.cpp -o CMakeFiles/Language.dir/dyn_array.cpp.s
 
 source/CMakeFiles/Language.dir/skip_space.cpp.o: source/CMakeFiles/Language.dir/flags.make
 source/CMakeFiles/Language.dir/skip_space.cpp.o: ../source/skip_space.cpp
@@ -153,14 +153,29 @@ source/CMakeFiles/Language.dir/file_processing.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Language.dir/file_processing.cpp.s"
 	cd /home/maksim/Projects/language/front_end/build/source && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/maksim/Projects/language/front_end/source/file_processing.cpp -o CMakeFiles/Language.dir/file_processing.cpp.s
 
+source/CMakeFiles/Language.dir/check_args.cpp.o: source/CMakeFiles/Language.dir/flags.make
+source/CMakeFiles/Language.dir/check_args.cpp.o: ../source/check_args.cpp
+source/CMakeFiles/Language.dir/check_args.cpp.o: source/CMakeFiles/Language.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/maksim/Projects/language/front_end/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object source/CMakeFiles/Language.dir/check_args.cpp.o"
+	cd /home/maksim/Projects/language/front_end/build/source && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT source/CMakeFiles/Language.dir/check_args.cpp.o -MF CMakeFiles/Language.dir/check_args.cpp.o.d -o CMakeFiles/Language.dir/check_args.cpp.o -c /home/maksim/Projects/language/front_end/source/check_args.cpp
+
+source/CMakeFiles/Language.dir/check_args.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Language.dir/check_args.cpp.i"
+	cd /home/maksim/Projects/language/front_end/build/source && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/maksim/Projects/language/front_end/source/check_args.cpp > CMakeFiles/Language.dir/check_args.cpp.i
+
+source/CMakeFiles/Language.dir/check_args.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Language.dir/check_args.cpp.s"
+	cd /home/maksim/Projects/language/front_end/build/source && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/maksim/Projects/language/front_end/source/check_args.cpp -o CMakeFiles/Language.dir/check_args.cpp.s
+
 # Object files for target Language
 Language_OBJECTS = \
 "CMakeFiles/Language.dir/front_end.cpp.o" \
 "CMakeFiles/Language.dir/main.cpp.o" \
 "CMakeFiles/Language.dir/lexer.cpp.o" \
-"CMakeFiles/Language.dir/void_stack.cpp.o" \
+"CMakeFiles/Language.dir/dyn_array.cpp.o" \
 "CMakeFiles/Language.dir/skip_space.cpp.o" \
-"CMakeFiles/Language.dir/file_processing.cpp.o"
+"CMakeFiles/Language.dir/file_processing.cpp.o" \
+"CMakeFiles/Language.dir/check_args.cpp.o"
 
 # External object files for target Language
 Language_EXTERNAL_OBJECTS =
@@ -168,12 +183,13 @@ Language_EXTERNAL_OBJECTS =
 source/Language: source/CMakeFiles/Language.dir/front_end.cpp.o
 source/Language: source/CMakeFiles/Language.dir/main.cpp.o
 source/Language: source/CMakeFiles/Language.dir/lexer.cpp.o
-source/Language: source/CMakeFiles/Language.dir/void_stack.cpp.o
+source/Language: source/CMakeFiles/Language.dir/dyn_array.cpp.o
 source/Language: source/CMakeFiles/Language.dir/skip_space.cpp.o
 source/Language: source/CMakeFiles/Language.dir/file_processing.cpp.o
+source/Language: source/CMakeFiles/Language.dir/check_args.cpp.o
 source/Language: source/CMakeFiles/Language.dir/build.make
 source/Language: source/CMakeFiles/Language.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/maksim/Projects/language/front_end/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable Language"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/maksim/Projects/language/front_end/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable Language"
 	cd /home/maksim/Projects/language/front_end/build/source && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/Language.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

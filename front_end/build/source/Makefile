@@ -130,6 +130,54 @@ Language/fast:
 	cd /home/maksim/Projects/language/front_end/build && $(MAKE) $(MAKESILENT) -f source/CMakeFiles/Language.dir/build.make source/CMakeFiles/Language.dir/build
 .PHONY : Language/fast
 
+check_args.o: check_args.cpp.o
+.PHONY : check_args.o
+
+# target to build an object file
+check_args.cpp.o:
+	cd /home/maksim/Projects/language/front_end/build && $(MAKE) $(MAKESILENT) -f source/CMakeFiles/Language.dir/build.make source/CMakeFiles/Language.dir/check_args.cpp.o
+.PHONY : check_args.cpp.o
+
+check_args.i: check_args.cpp.i
+.PHONY : check_args.i
+
+# target to preprocess a source file
+check_args.cpp.i:
+	cd /home/maksim/Projects/language/front_end/build && $(MAKE) $(MAKESILENT) -f source/CMakeFiles/Language.dir/build.make source/CMakeFiles/Language.dir/check_args.cpp.i
+.PHONY : check_args.cpp.i
+
+check_args.s: check_args.cpp.s
+.PHONY : check_args.s
+
+# target to generate assembly for a file
+check_args.cpp.s:
+	cd /home/maksim/Projects/language/front_end/build && $(MAKE) $(MAKESILENT) -f source/CMakeFiles/Language.dir/build.make source/CMakeFiles/Language.dir/check_args.cpp.s
+.PHONY : check_args.cpp.s
+
+dyn_array.o: dyn_array.cpp.o
+.PHONY : dyn_array.o
+
+# target to build an object file
+dyn_array.cpp.o:
+	cd /home/maksim/Projects/language/front_end/build && $(MAKE) $(MAKESILENT) -f source/CMakeFiles/Language.dir/build.make source/CMakeFiles/Language.dir/dyn_array.cpp.o
+.PHONY : dyn_array.cpp.o
+
+dyn_array.i: dyn_array.cpp.i
+.PHONY : dyn_array.i
+
+# target to preprocess a source file
+dyn_array.cpp.i:
+	cd /home/maksim/Projects/language/front_end/build && $(MAKE) $(MAKESILENT) -f source/CMakeFiles/Language.dir/build.make source/CMakeFiles/Language.dir/dyn_array.cpp.i
+.PHONY : dyn_array.cpp.i
+
+dyn_array.s: dyn_array.cpp.s
+.PHONY : dyn_array.s
+
+# target to generate assembly for a file
+dyn_array.cpp.s:
+	cd /home/maksim/Projects/language/front_end/build && $(MAKE) $(MAKESILENT) -f source/CMakeFiles/Language.dir/build.make source/CMakeFiles/Language.dir/dyn_array.cpp.s
+.PHONY : dyn_array.cpp.s
+
 file_processing.o: file_processing.cpp.o
 .PHONY : file_processing.o
 
@@ -250,30 +298,6 @@ skip_space.cpp.s:
 	cd /home/maksim/Projects/language/front_end/build && $(MAKE) $(MAKESILENT) -f source/CMakeFiles/Language.dir/build.make source/CMakeFiles/Language.dir/skip_space.cpp.s
 .PHONY : skip_space.cpp.s
 
-void_stack.o: void_stack.cpp.o
-.PHONY : void_stack.o
-
-# target to build an object file
-void_stack.cpp.o:
-	cd /home/maksim/Projects/language/front_end/build && $(MAKE) $(MAKESILENT) -f source/CMakeFiles/Language.dir/build.make source/CMakeFiles/Language.dir/void_stack.cpp.o
-.PHONY : void_stack.cpp.o
-
-void_stack.i: void_stack.cpp.i
-.PHONY : void_stack.i
-
-# target to preprocess a source file
-void_stack.cpp.i:
-	cd /home/maksim/Projects/language/front_end/build && $(MAKE) $(MAKESILENT) -f source/CMakeFiles/Language.dir/build.make source/CMakeFiles/Language.dir/void_stack.cpp.i
-.PHONY : void_stack.cpp.i
-
-void_stack.s: void_stack.cpp.s
-.PHONY : void_stack.s
-
-# target to generate assembly for a file
-void_stack.cpp.s:
-	cd /home/maksim/Projects/language/front_end/build && $(MAKE) $(MAKESILENT) -f source/CMakeFiles/Language.dir/build.make source/CMakeFiles/Language.dir/void_stack.cpp.s
-.PHONY : void_stack.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -283,6 +307,12 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... Language"
+	@echo "... check_args.o"
+	@echo "... check_args.i"
+	@echo "... check_args.s"
+	@echo "... dyn_array.o"
+	@echo "... dyn_array.i"
+	@echo "... dyn_array.s"
 	@echo "... file_processing.o"
 	@echo "... file_processing.i"
 	@echo "... file_processing.s"
@@ -298,9 +328,6 @@ help:
 	@echo "... skip_space.o"
 	@echo "... skip_space.i"
 	@echo "... skip_space.s"
-	@echo "... void_stack.o"
-	@echo "... void_stack.i"
-	@echo "... void_stack.s"
 .PHONY : help
 
 

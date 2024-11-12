@@ -1,6 +1,8 @@
 #ifndef LEXER_HPP
 #define LEXER_HPP
 
+#include "dyn_array.hpp"
+
 enum LexError
 {
     LEX_ERROR_OK      = 0,
@@ -57,7 +59,7 @@ const LexOpers OPERS[] =
     {LEX_OPER_EXP,    "exp",  3, true}
 };
 
-const NUM_OPERS = sizeof (OPERS) / sizeof (OPERS[0]);
+const int NUM_OPERS = sizeof (OPERS) / sizeof (OPERS[0]);
 
 union LexElem
 {
@@ -79,6 +81,18 @@ struct Var
     size_t len;
 };
 
-LexError fill_tokens (LexInfo* tokens, char* input_buffer);
+LexError    get_token             (Darray* tokens, Darray* vars, char* input_buffer);
+bool        try_char_operation    (Darray* tokens, char** buffer, LexError* error);
+bool        try_digit             (Darray* tokens, char** buffer, LexError* error);
+bool        try_parenthesis       (Darray* tok, char** buffer, LexError* error);
+bool        try_function          (Darray* tokens, char** buffer, LexError* error);
+bool        try_var               (Darray* tokens, Darray* vars, char** buffer, LexError* error);
+LexOperator search_oper           (char* str, size_t len);
+int         search_var            (Darray* tokens, Darray* vars, char* begin, size_t len);
+LexOperator search_char_operation (char* buffer);
+LexError    fill_new_var          (Darray* vars, char* name, size_t len);
+LexError    fill_token_oper       (Darray* tokens, LexOperator oper);
+LexError    fill_token_double     (Darray* tokens, char** buffer);
+
 
 #endif // LEXER_HPP

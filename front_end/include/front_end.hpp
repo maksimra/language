@@ -1,7 +1,7 @@
 #ifndef FRONT_END_HPP
 #define FRONT_END_HPP
 
-#include "void_stack.hpp"
+#include "dyn_array.hpp"
 #include "lexer.hpp"
 // #include "build_tree.hpp"
 
@@ -11,19 +11,19 @@ enum FrontError
     FRONT_ERROR_SETVBUF        = 1,
     FRONT_ERROR_NULL_PTR_SRUCT = 2,
     FRONT_ERROR_FOPEN          = 3,
-    FRONT_ERROR_STK            = 4,
+    FRONT_ERROR_DYN_ARR        = 4,
     FRONT_ERROR_CALLOC         = 5,
-    FRONT_ERROR_PROC_FILE      = 6
+    FRONT_ERROR_PROC_FILE      = 6,
 };
 
 struct FrontInfo
 {
     FILE* input_file;
     size_t size_of_file;
-    LexInfo* tokens;
+    Darray tokens;
     char* input_buffer;
     FILE* output_file;
-    Stack vars;
+    Darray vars;
 };
 
 void        frontend_set_log_file (FILE* file);
