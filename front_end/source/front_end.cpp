@@ -5,6 +5,7 @@
 #include "../include/print_in_log.hpp"
 #include "../include/file_processing.hpp"
 #include "../include/lexer.hpp"
+#include "../include/parser.hpp"
 
 const size_t INITIAL_CAPACITY = 25;
 
@@ -38,6 +39,10 @@ const char* frontend_get_error (FrontError error)
             return "Frontend: Ошибка обработки файла.";
         case FRONT_ERROR_CALLOC:
             return "Frontend: Ошибка выделения памяти.";
+        case FRONT_ERROR_LEX:
+            return "Frontend: Ошибка лексера.";
+        case FRONT_ERROR_PARSE:
+            return "Frontend: Ошибка парсера.";
         default:
             return "Frontend: Нужной ошибки не найдено...";
     }
@@ -107,6 +112,21 @@ FrontError frontend_pass (FrontInfo* front)
 {
     FrontError front_error = FRONT_ERROR_OK;
     LexError   lex_error = get_token (&(front->tokens), &(front->vars), front->input_buffer);
+    if (lex_error)
+    {
+        lex_print_error (lex_error);
+        return FRONT_ERROR_LEX;
+    }
+
+    ParseError parse_error = PARSE_ERROR_OK;
+    Node* syntax_tree = parse (&(front->tokens), &parse_error);
+    if (parse_error)
+    {
+        parse_print_error (parse_error);
+        return FRONT_ERROR_PARSE;
+    }
+
+    return front_error;
 }
 
 // FrontError frontend_dtor (FrontInfo* front)

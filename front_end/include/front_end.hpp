@@ -14,6 +14,8 @@ enum FrontError
     FRONT_ERROR_DYN_ARR        = 4,
     FRONT_ERROR_CALLOC         = 5,
     FRONT_ERROR_PROC_FILE      = 6,
+    FRONT_ERROR_LEX            = 7,
+    FRONT_ERROR_PARSE          = 8
 };
 
 struct FrontInfo

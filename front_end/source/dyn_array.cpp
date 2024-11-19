@@ -36,6 +36,8 @@ DynArrError dyn_array_ctor (Darray* darr, size_t capacity, size_t elem_size)
 DynArrError dyn_array_push (Darray* darr, void* element)
 {
     PRINT_BEGIN();
+    assert (darr);
+
     DynArrError error = dyn_array_verifier (darr);
 
     if (error)
@@ -61,9 +63,25 @@ DynArrError dyn_array_push (Darray* darr, void* element)
     return error;
 }
 
+void* dyn_array_get (const Darray* darr, size_t index)
+{
+    PRINT_BEGIN();
+    assert (darr);
+
+    DynArrError error = dyn_array_verifier (darr);
+    dyn_array_print_error (error);
+
+    if ((error) || (index >= darr->size))
+        return NULL;
+
+    return (char*) darr->data + index * darr->elem_size;
+}
+
 DynArrError dyn_array_resize (Darray* darr, size_t new_capacity)
 {
     PRINT_BEGIN();
+    assert (darr);
+
     void* temp = NULL;
     if (darr->data == NULL)
     {
@@ -79,7 +97,7 @@ DynArrError dyn_array_resize (Darray* darr, size_t new_capacity)
             return ARR_ERROR_REALLOC;
     }
     darr->data = temp;
-    darr->size = new_capacity;
+    darr->capacity = new_capacity;
     PRINT_END();
     return ARR_ERROR_OK;
 }
@@ -98,7 +116,7 @@ DynArrError dyn_array_dtor (Darray* darr)
     return ARR_ERROR_OK;
 }
 
-DynArrError dyn_array_verifier (Darray* darr)
+DynArrError dyn_array_verifier (const Darray* darr)
 {
     PRINT_BEGIN();
     if (darr == NULL)

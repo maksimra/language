@@ -8,18 +8,12 @@ void args_set_log_file (FILE* file)
     log_file = file;
 }
 
-ArgsError args_check (const int argc, const char** argv, int ref_argc)
+ArgsError args_check (const int argc, int ref_argc)
 {
     PRINT_BEGIN();
     if (argc != ref_argc)
-        return ARGS_ERROR_ARGC;
-
-    FILE* file = fopen (argv[1], "r"); // TODO: функция должна вместо этого
+        return ARGS_ERROR_ARGC;        // TODO: функция должна вместо этого
                                        // смотреть флаги. (спросить лично потом)
-    if (file == NULL)
-        return ARGS_ERROR_ARGV;
-
-    fclose (file);
     PRINT_END();
     return ARGS_NO_ERROR;
 }

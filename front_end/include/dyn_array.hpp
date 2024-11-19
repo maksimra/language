@@ -30,7 +30,8 @@ DynArrError dyn_array_ctor         (Darray* darr, size_t capacity, size_t elem_s
 DynArrError dyn_array_dtor         (Darray* darr);
 DynArrError dyn_array_resize       (Darray* darr, size_t new_capacity);
 DynArrError dyn_array_push         (Darray* darr, void* element);
-DynArrError dyn_array_verifier     (Darray* darr);
+void*       dyn_array_get          (const Darray* darr, size_t index);
+DynArrError dyn_array_verifier     (const Darray* darr);
 const char* dyn_array_get_error    (DynArrError error);
 void        dyn_array_print_error  (DynArrError error);
 void        dyn_array_set_log_file (FILE* file);

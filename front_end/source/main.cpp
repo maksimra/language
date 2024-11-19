@@ -21,10 +21,9 @@ int main (const int argc, const char* argv[])
     frontend_set_log_file (log_file);
 
     const int necessary_n_args = 3;
-    ArgsError args_error = args_check (argc, argv, necessary_n_args);
+    ArgsError args_error = args_check (argc, necessary_n_args);
     if (args_print_if_error (args_error))
     {
-    fprintf (stderr, "I am here\n");
         exit_code = EXIT_FAILURE;
         fclose (log_file);
         return exit_code;
