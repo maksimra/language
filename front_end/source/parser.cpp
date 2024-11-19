@@ -11,13 +11,44 @@
 #define CUR_NUMBER ((LexInfo*)((char*) tokens->data + *n_tok * tokens->elem_size))->elem.num
 #define VAR_NUMBER ((LexInfo*)((char*) tokens->data + *n_tok * tokens->elem_size))->elem.var_number
 #define PREV_OPER  ((LexInfo*)((char*) tokens->data + (*n_tok - 1) * tokens->elem_size))->elem.oper
+#define PREV_TYPE  ((LexInfo*)((char*) tokens->data + (*n_tok - 1) * tokens->elem_size))->type
 
 static FILE* log_file = stderr;
 
 Node* parse (const Darray* tokens, ParseError* error)
 {
+    Node* root = NULL;
+    Node* val = NULL;
     size_t cur_token_number = 0;
-    return get_assign (tokens, &cur_token_number, error);
+    size_t* n_tok = &cur_token_number; // TODO: подумать, как убрать
+    do
+    {
+        Node* node = get_assign (tokens, &cur_token_number, error);
+
+        if (CUR_TYPE != LEX_TYPE_OPER && CUR_OPER != LEX_OPER_SEMICOLON)
+        {
+            *error = PARSE_ERROR_SYNTAX;
+            return NULL;
+        }
+
+        cur_token_number++;
+
+        Node* semicolon_node = create_node (LEX_TYPE_OPER, LEX_OPER_SEMICOLON,
+                                            node,
+                                            NULL, error);
+        if (val != NULL)
+        {
+            val->right = semicolon_node; // TODO: потом насчёт обработки ошибок подумать
+            val = val->right;
+        }
+        else
+        {
+            val = semicolon_node;
+            root = val;
+        }
+    } while (tokens->size < cur_token_number);
+
+    return root;
 }
 
 Node* get_assign (const Darray* tokens, size_t* n_tok, ParseError* error)
@@ -194,8 +225,8 @@ Node* try_parenthesis (const Darray* tokens, size_t* n_tok, ParseError* error)
 
         return val;
     }
-    Node* val = try_item (tokens, n_tok, error);
-    return val;
+
+    return try_item (tokens, n_tok, error);
 }
 
 Node* try_mult (const Darray* tokens, size_t* n_tok, ParseError* error)
@@ -216,12 +247,20 @@ Node* try_mult (const Darray* tokens, size_t* n_tok, ParseError* error)
             return NULL;
         }
 
+        fprintf (stderr, "old n_tok == %zu\n\n", *n_tok);
         Node* val2 = try_func (tokens, n_tok, error);
+        fprintf (stderr, "val2 = %p\n\n\n", val2);
+        fprintf (stderr, "new n_tok == %zu\n\n", *n_tok);
+        fprintf (stderr, "prev_type = %d\n\n\n", PREV_TYPE);
 
-        if (PREV_OPER == LEX_OPER_MUL)
+        if (PREV_OPER == LEX_OPER_MUL) // TODO: здесь падает
+        {
             val = create_node (LEX_TYPE_OPER, LEX_OPER_MUL, val, val2, error);
+        }
         else
+        {
             val = create_node (LEX_TYPE_OPER, LEX_OPER_DIV, val, val2, error);
+        }
     }
     return val;
 }
