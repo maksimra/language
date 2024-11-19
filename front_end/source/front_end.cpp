@@ -6,6 +6,7 @@
 #include "../include/file_processing.hpp"
 #include "../include/lexer.hpp"
 #include "../include/parser.hpp"
+#include "../include/print_svg.hpp"
 
 const size_t INITIAL_CAPACITY = 25;
 
@@ -43,6 +44,8 @@ const char* frontend_get_error (FrontError error)
             return "Frontend: Ошибка лексера.";
         case FRONT_ERROR_PARSE:
             return "Frontend: Ошибка парсера.";
+        case FRONT_ERROR_GRAPH:
+            return "Frontend: Ошибка рисования графика.";
         default:
             return "Frontend: Нужной ошибки не найдено...";
     }
@@ -124,6 +127,14 @@ FrontError frontend_pass (FrontInfo* front)
     {
         parse_print_error (parse_error);
         return FRONT_ERROR_PARSE;
+    }
+
+    FILE* graph = fopen ("graphviz.txt", "w"); // TODO: в другом месте открыватб
+    GraphError graph_error = graphviz (syntax_tree, &(front->vars), graph);
+    if (graph_error)
+    {
+        graph_print_error (graph_error);
+        return FRONT_ERROR_GRAPH;
     }
 
     return front_error;
