@@ -11,6 +11,8 @@
 #include "../include/dyn_array.hpp"
 #include "../include/print_in_log.hpp"
 
+#define VAR_NAME ((Var*) vars->data + var_number)->name
+
 static FILE* log_file = stderr;
 
 LexError get_token (Darray* tokens, Darray* vars, char* input_buffer) // TODO: не забыть навесить константы на указатели-параметры
@@ -22,6 +24,7 @@ LexError get_token (Darray* tokens, Darray* vars, char* input_buffer) // TODO: �
 
     while (*input_buffer != '\0')
     {
+        printf ("new char = %c\n", *input_buffer);
         if (try_char_operation (tokens, &(input_buffer), &error) ||
             try_digit          (tokens, &(input_buffer), &error) ||
             try_parenthesis    (tokens, &(input_buffer), &error) ||
@@ -36,6 +39,7 @@ LexError get_token (Darray* tokens, Darray* vars, char* input_buffer) // TODO: �
             return LEX_ERROR_SYNTAX;
         }
     }
+    printf ("AAAAAAAAAAAAAAAAAAA\n\n\n\n");
     token_dump (tokens, vars);
     return LEX_ERROR_OK;
 }
@@ -44,6 +48,7 @@ bool try_var (Darray* tokens, Darray* vars, char** buffer, LexError* error)
 {
     if (isalpha (**buffer))
     {
+        printf ("first_char_name var = %c\n\n", **buffer);
         char* start_position = *buffer;
 
         (*buffer)++;
@@ -51,6 +56,7 @@ bool try_var (Darray* tokens, Darray* vars, char** buffer, LexError* error)
             (*buffer)++;
 
         size_t var_len = (size_t) (*buffer - start_position);
+        printf ("hahahahahhahaha\n");
         size_t var_number = search_var (tokens, vars, start_position, var_len);
         LexElem elem = {};
         if (var_number != -1)
@@ -60,7 +66,6 @@ bool try_var (Darray* tokens, Darray* vars, char** buffer, LexError* error)
         else
         {
             elem = {.var_number = vars->size};
-
             *error = fill_new_var (vars, start_position, var_len);
         }
 
@@ -146,16 +151,16 @@ void token_dump (const Darray* tokens, const Darray* vars) // TODO: исправ
         switch (((LexInfo*) tokens->data + pass)->type)
         {
             case LEX_TYPE_OPER:
-                printf ("OPER: %zu --> %s\n",  pass, OPERS[(int) ((LexInfo*) dyn_array_get (tokens, pass))->elem.oper].name); // TODO: обёртку
+                printf ("OPER: %zu --> %s\n",  pass, OPERS[(int) ((LexInfo*) tokens->data + pass)->elem.oper].name); // TODO: обёртку
                 break;
             case LEX_TYPE_NUM:
-                printf ("NUM: %zu --> %lf\n",  pass, ((LexInfo*) dyn_array_get (tokens, pass))->elem.num);
+                printf ("NUM: %zu --> %lf\n",  pass, ((LexInfo*) tokens->data + pass)->elem.num);
                 break;
             case LEX_TYPE_VAR:
-                printf ("VAR: %zu --> %.*s\n", pass, (int) ((Var*) dyn_array_get (vars, pass))->len, ((Var*) dyn_array_get (vars, pass))->name);
+                printf ("VAR: %zu --> %.*s\n", pass, (int) ((Var*) vars->data + (((LexInfo*) tokens->data + pass)->elem.var_number))->len, ((Var*) vars->data + (((LexInfo*) tokens->data + pass)->elem.var_number))->name);
                 break;
             case LEX_TYPE_TXT:
-                printf ("TXT: %zu --> %c\n",   pass, ((LexInfo*) dyn_array_get (tokens, pass))->elem.symbol);
+                printf ("TXT: %zu --> %c\n",   pass, ((LexInfo*) tokens->data + pass)->elem.symbol);
                 break;
             default:
                 assert (0);
@@ -177,7 +182,7 @@ LexOperator search_oper (char* str, size_t len)
 size_t search_var (Darray* tokens, Darray* vars, char* begin, size_t len)
 {
     for (int var_number = 0; var_number < vars->size; var_number++)
-        if (strncmp (begin, ((Var*) vars[var_number].data)->name, len) == 0)
+        if (strncmp (begin, VAR_NAME, len) == 0)
             return var_number;
 
     return SIZE_MAX;
@@ -203,11 +208,8 @@ LexError fill_token_oper (Darray* tokens, LexOperator oper)
 {
     LexElem elem = {.oper = oper};
     LexInfo token = {LEX_TYPE_OPER, elem};
-    printf ("elem_oper = %d\n", token.type);
 
     DynArrError stk_error = dyn_array_push (tokens, &token);
-    printf ("size = %zu\n", tokens->size);
-    printf ("oper = %d\n", ((LexInfo*) tokens->data + 1)->elem.oper);
     if (stk_error)
     {
         dyn_array_print_error (stk_error);

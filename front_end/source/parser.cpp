@@ -5,14 +5,13 @@
 #include "../include/dyn_array.hpp"
 #include "../include/print_in_log.hpp"
 
-#define CUR_LEX    ((LexInfo*)((char*) tokens->data + *n_tok * tokens->elem_size))
-#define CUR_TYPE   ((LexInfo*)((char*) tokens->data + *n_tok * tokens->elem_size))->type
-#define CUR_OPER   ((LexInfo*)((char*) tokens->data + *n_tok * tokens->elem_size))->elem.oper
-#define CUR_SYMBOL ((LexInfo*)((char*) tokens->data + *n_tok * tokens->elem_size))->elem.symbol
-#define CUR_NUMBER ((LexInfo*)((char*) tokens->data + *n_tok * tokens->elem_size))->elem.num
-#define VAR_NUMBER ((LexInfo*)((char*) tokens->data + *n_tok * tokens->elem_size))->elem.var_number
-#define PREV_OPER  ((LexInfo*)((char*) tokens->data + (*n_tok - 1) * tokens->elem_size))->elem.oper
-#define PREV_TYPE  ((LexInfo*)((char*) tokens->data + (*n_tok - 1) * tokens->elem_size))->type
+#define CUR_TYPE   ((LexInfo*) tokens->data + *n_tok)->type
+#define CUR_OPER   ((LexInfo*) tokens->data + *n_tok)->elem.oper
+#define CUR_SYMBOL ((LexInfo*) tokens->data + *n_tok)->elem.symbol
+#define CUR_NUMBER ((LexInfo*) tokens->data + *n_tok)->elem.num
+#define VAR_NUMBER ((LexInfo*) tokens->data + *n_tok)->elem.var_number
+#define PREV_OPER  ((LexInfo*) tokens->data + *n_tok - 1)->elem.oper
+#define PREV_TYPE  ((LexInfo*) tokens->data + *n_tok - 1)->type
 
 static FILE* log_file = stderr;
 
@@ -24,6 +23,7 @@ Node* parse (const Darray* tokens, ParseError* error)
     size_t* n_tok = &cur_token_number; // TODO: подумать, как убрать
     do
     {
+        printf ("AAAAAAAAAAAAA\n\n\n\n\n\n");
         Node* node = get_assign (tokens, &cur_token_number, error);
 
         if (CUR_TYPE != LEX_TYPE_OPER && CUR_OPER != LEX_OPER_SEMICOLON)
@@ -47,7 +47,7 @@ Node* parse (const Darray* tokens, ParseError* error)
             val = semicolon_node;
             root = val;
         }
-    } while (tokens->size < cur_token_number);
+    } while (tokens->size > cur_token_number);
 
     return root;
 }
@@ -98,6 +98,7 @@ Node* get_expr (const Darray* tokens, size_t* n_tok, ParseError* error)
     while (CUR_TYPE == LEX_TYPE_OPER &&
            (CUR_OPER == LEX_OPER_ADD || CUR_OPER == LEX_OPER_SUB))
     {
+        LexOperator oper = CUR_OPER;
         (*n_tok)++;
 
         if (couple_oper (tokens, *n_tok) == true)// TODO: переименовать функцию
@@ -111,7 +112,7 @@ Node* get_expr (const Darray* tokens, size_t* n_tok, ParseError* error)
         }
 
         Node* val2 = try_mult (tokens, n_tok, error);
-        if (PREV_OPER == LEX_OPER_ADD)
+        if (oper == LEX_OPER_ADD)
             val = create_node (LEX_TYPE_OPER, LEX_OPER_ADD, val, val2, error);
         else
             val = create_node (LEX_TYPE_OPER, LEX_OPER_SUB, val, val2, error);
@@ -236,6 +237,7 @@ Node* try_mult (const Darray* tokens, size_t* n_tok, ParseError* error)
     while (CUR_TYPE == LEX_TYPE_OPER &&
            (CUR_OPER == LEX_OPER_MUL || CUR_OPER == LEX_OPER_DIV))
     {
+        LexOperator oper = CUR_OPER;
         (*n_tok)++;
 
         if (couple_oper (tokens, *n_tok) == true)
@@ -247,14 +249,9 @@ Node* try_mult (const Darray* tokens, size_t* n_tok, ParseError* error)
             tree_dtor (val); // TODO: вспомнить для чего
             return NULL;
         }
-
-        fprintf (stderr, "old n_tok == %zu\n\n", *n_tok);
         Node* val2 = try_func (tokens, n_tok, error);
-        fprintf (stderr, "val2 = %p\n\n\n", val2);
-        fprintf (stderr, "new n_tok == %zu\n\n", *n_tok);
-        fprintf (stderr, "prev_type = %d\n\n\n", PREV_TYPE);
 
-        if (PREV_OPER == LEX_OPER_MUL) // TODO: здесь падает
+        if (oper == LEX_OPER_MUL) // TODO: здесь падает
         {
             val = create_node (LEX_TYPE_OPER, LEX_OPER_MUL, val, val2, error);
         }
@@ -300,7 +297,7 @@ bool couple_oper (const Darray* tokens, size_t n_tok_)
     return false;
 }
 
-Node* create_node (LexType type, double value, Node* left, Node* right, ParseError* error)
+Node* create_node (LexType type, double value, Node* left, Node* right, ParseError* error) // TODO: в отельную бибилиотеку
 {
     Node* new_node = (Node*) calloc (1, sizeof (Node));
 

@@ -114,6 +114,7 @@ out:
 FrontError frontend_pass (FrontInfo* front)
 {
     FrontError front_error = FRONT_ERROR_OK;
+    printf ("QQQQQQQQQQQQQQQQQQ\n\n\n");
     LexError   lex_error = get_token (&(front->tokens), &(front->vars), front->input_buffer);
     if (lex_error)
     {

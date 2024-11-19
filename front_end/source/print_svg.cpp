@@ -5,10 +5,10 @@
 #include "../include/print_in_log.hpp"
 #include "../include/dyn_array.hpp"
 
-#define LEFT_VAR_NAME  ((Var*) (char*) vars->data + node->left->elem.elem.var_number * vars->elem_size)->name
-#define LEFT_VAR_LEN   (int)(((Var*) (char*) vars->data + node->left->elem.elem.var_number * vars->elem_size)->len)
-#define RIGHT_VAR_NAME ((Var*) (char*) vars->data + node->right->elem.elem.var_number * vars->elem_size)->name
-#define RIGHT_VAR_LEN  (int)(((Var*) (char*) vars->data + node->right->elem.elem.var_number * vars->elem_size)->len)
+#define LEFT_VAR_NAME  ((Var*) vars->data + node->left->elem.elem.var_number)->name
+#define LEFT_VAR_LEN   (int)(((Var*) vars->data + node->left->elem.elem.var_number)->len)
+#define RIGHT_VAR_NAME ((Var*) vars->data + node->right->elem.elem.var_number)->name
+#define RIGHT_VAR_LEN  (int)(((Var*) vars->data + node->right->elem.elem.var_number)->len)
 
 static FILE* log_file = stderr;
 
@@ -42,13 +42,16 @@ GraphError graphviz (const Node* node, const Darray* vars, FILE* file)
 
     print_start (file);
 
-    print_connections (node, vars, file);
-
+    GraphError error = print_connections (node, vars, file);
     print_end (file);
     fclose (file);
 
+    if (error)
+        return error;
+
     const char* cmd = "dot graphviz.txt -Tsvg -otree.svg";
     system (cmd);
+    return GRAPH_ERROR_OK;
 }
 
 void print_start (FILE* file)
@@ -130,7 +133,6 @@ GraphError draw_left (const Node* node, const Darray* vars, FILE* file)
         {
             case LEX_TYPE_OPER:
             {
-                fprintf (stderr, "oper == %s\n\n\n\n\n\n\n", OPERS[(int) node->elem.elem.oper].name);
                 fprintf (file, "{\"%s\n%p\"--\"%s\n%p\"[color = \"%s\"]};\n",
                                OPERS[(int) node->elem.elem.oper].name,
                                node,
