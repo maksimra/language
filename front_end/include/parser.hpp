@@ -14,7 +14,7 @@ struct Node
 {
     // LexType type; // TODO: узнать, что лучше, так или по указателю
     // LexElem elem;
-    LexInfo* elem;
+    LexInfo elem;
 
     Node* left;
     Node* right;

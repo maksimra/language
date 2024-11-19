@@ -5,6 +5,7 @@
 #include "../include/dyn_array.hpp"
 #include "../include/print_in_log.hpp"
 
+#define CUR_LEX    ((LexInfo*)((char*) tokens->data + *n_tok * tokens->elem_size))
 #define CUR_TYPE   ((LexInfo*)((char*) tokens->data + *n_tok * tokens->elem_size))->type
 #define CUR_OPER   ((LexInfo*)((char*) tokens->data + *n_tok * tokens->elem_size))->elem.oper
 #define CUR_SYMBOL ((LexInfo*)((char*) tokens->data + *n_tok * tokens->elem_size))->elem.symbol
@@ -309,16 +310,23 @@ Node* create_node (LexType type, double value, Node* left, Node* right, ParseErr
         return NULL;
     }
 
-    new_node->elem->type = type;
+    new_node->elem.type = type;
 
-    if (type == LEX_TYPE_OPER)
-        new_node->elem->elem.oper = (LexOperator) value;
-
-    else if (type == LEX_TYPE_NUM)
-        new_node->elem->elem.num = value;
-
-    else if (type == LEX_TYPE_VAR)
-        new_node->elem->elem.var_number = (int) value;
+    switch (type)
+    {
+        case LEX_TYPE_OPER:
+            new_node->elem.elem.oper = (LexOperator) value;
+            break;
+        case LEX_TYPE_NUM:
+            new_node->elem.elem.num = value;
+            break;
+        case LEX_TYPE_VAR:
+            new_node->elem.elem.var_number = (size_t) value;
+            break;
+        default:
+            *error = PARSE_ERROR_SYNTAX;
+            return NULL;
+    }
 
     new_node->left = left;
     new_node->right = right;
