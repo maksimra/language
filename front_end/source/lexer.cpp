@@ -39,7 +39,6 @@ LexError get_token (Darray* tokens, Darray* vars, char* input_buffer) // TODO: Ð
             return LEX_ERROR_SYNTAX;
         }
     }
-    printf ("AAAAAAAAAAAAAAAAAAA\n\n\n\n");
     token_dump (tokens, vars);
     return LEX_ERROR_OK;
 }
@@ -56,10 +55,9 @@ bool try_var (Darray* tokens, Darray* vars, char** buffer, LexError* error)
             (*buffer)++;
 
         size_t var_len = (size_t) (*buffer - start_position);
-        printf ("hahahahahhahaha\n");
-        size_t var_number = search_var (tokens, vars, start_position, var_len);
+        size_t var_number = search_var (vars, start_position, var_len);
         LexElem elem = {};
-        if (var_number != -1)
+        if (var_number != SIZE_MAX)
         {
             elem = {.var_number = var_number};
         }
@@ -179,9 +177,9 @@ LexOperator search_oper (char* str, size_t len)
     return LEX_OPER_NONE;
 }
 
-size_t search_var (Darray* tokens, Darray* vars, char* begin, size_t len)
+size_t search_var (Darray* vars, char* begin, size_t len)
 {
-    for (int var_number = 0; var_number < vars->size; var_number++)
+    for (size_t var_number = 0; var_number < vars->size; var_number++)
         if (strncmp (begin, VAR_NAME, len) == 0)
             return var_number;
 

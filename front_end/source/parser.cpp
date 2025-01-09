@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
+#include <cstdint>
+#include <cstring>
 #include "../include/parser.hpp"
 #include "../include/lexer.hpp"
 #include "../include/dyn_array.hpp"
@@ -23,7 +25,6 @@ Node* parse (const Darray* tokens, ParseError* error)
     size_t* n_tok = &cur_token_number; // TODO: подумать, как убрать
     do
     {
-        printf ("AAAAAAAAAAAAA\n\n\n\n\n\n");
         Node* node = get_assign (tokens, &cur_token_number, error);
 
         if (CUR_TYPE != LEX_TYPE_OPER && CUR_OPER != LEX_OPER_SEMICOLON)
@@ -34,9 +35,17 @@ Node* parse (const Darray* tokens, ParseError* error)
 
         cur_token_number++;
 
+        TreeError tree_error = TREE_ERROR_OK;
         Node* semicolon_node = create_node (LEX_TYPE_OPER, LEX_OPER_SEMICOLON,
                                             node,
-                                            NULL, error);
+                                            NULL, &tree_error);
+        if (tree_error)
+        {
+            tree_print_error (tree_error);
+            *error = PARSE_ERROR_TREE;
+            return NULL;
+        } // TODO: в макрос обернуть
+
         if (val != NULL)
         {
             val->right = semicolon_node; // TODO: потом насчёт обработки ошибок подумать
@@ -62,9 +71,21 @@ Node* get_assign (const Darray* tokens, size_t* n_tok, ParseError* error)
             CUR_OPER == LEX_OPER_ASSIGN)
         {
             (*n_tok)++;
-            return create_node (LEX_TYPE_OPER, LEX_OPER_ASSIGN,
-                                create_node (LEX_TYPE_VAR, var_number, NULL, NULL, error),
-                                get_expr (tokens, n_tok, error), error);
+
+            TreeError tree_error = TREE_ERROR_OK;
+            Node* val = create_node (LEX_TYPE_OPER, (double) LEX_OPER_ASSIGN,
+                                     create_node (LEX_TYPE_VAR, (double) var_number, NULL, NULL, &tree_error),
+                                     get_expr (tokens, n_tok, error), &tree_error);
+
+            if (tree_error)
+            {
+                tree_printf_error (tree_error);
+                *error = PARSE_ERROR_TREE;
+                return NULL;
+            }
+            return create_node (LEX_TYPE_OPER, (double) LEX_OPER_ASSIGN,
+                                create_node (LEX_TYPE_VAR, (double) var_number, NULL, NULL, &tree_error),
+                                get_expr (tokens, n_tok, error), &tree_error);
         }
     }
     return get_expr (tokens, n_tok, error);
@@ -78,7 +99,7 @@ Node* get_expr (const Darray* tokens, size_t* n_tok, ParseError* error)
     {
         (*n_tok)++;
 
-        if (couple_oper (tokens, *n_tok) == true)
+        if (couple_oper (tokens, n_tok) == true)
         {
             *error = PARSE_ERROR_SYNTAX;
             fprintf (stderr, "Введено некорректное выражение: оператор \"%s\" сразу после оператора \"%s\"."
@@ -101,7 +122,7 @@ Node* get_expr (const Darray* tokens, size_t* n_tok, ParseError* error)
         LexOperator oper = CUR_OPER;
         (*n_tok)++;
 
-        if (couple_oper (tokens, *n_tok) == true)// TODO: переименовать функцию
+        if (couple_oper (tokens, n_tok) == true)// TODO: переименовать функцию
         {
             *error = PARSE_ERROR_SYNTAX;
             fprintf (stderr, "Введено некорректное выражение: оператор \"%s\" сразу после оператора \"%s\"."
@@ -127,7 +148,7 @@ Node* try_pow (const Darray* tokens, size_t* n_tok, ParseError* error)
     {
         (*n_tok)++;
 
-        if (couple_oper (tokens, *n_tok) == true)
+        if (couple_oper (tokens, n_tok) == true)
         {
             *error = PARSE_ERROR_SYNTAX;
             fprintf (stderr, "Введено некорректное выражение: оператор \"%s\" сразу после оператора \"%s\"."
@@ -205,6 +226,8 @@ Node* try_func (const Darray* tokens, size_t* n_tok, ParseError* error)
             case LEX_OPER_MUL:
             case LEX_OPER_DIV:
             case LEX_OPER_POW:
+            case LEX_OPER_ASSIGN:
+            case LEX_OPER_SEMICOLON:
             case LEX_OPER_NONE:
             default:
                 *error = PARSE_ERROR_SYNTAX;
@@ -240,7 +263,7 @@ Node* try_mult (const Darray* tokens, size_t* n_tok, ParseError* error)
         LexOperator oper = CUR_OPER;
         (*n_tok)++;
 
-        if (couple_oper (tokens, *n_tok) == true)
+        if (couple_oper (tokens, n_tok) == true)
         {
             *error = PARSE_ERROR_SYNTAX;
             fprintf (stderr, "Введено некорректное выражение: оператор \"%s\" сразу после оператора \"%s\"."
@@ -266,7 +289,7 @@ Node* try_mult (const Darray* tokens, size_t* n_tok, ParseError* error)
 Node* try_item (const Darray* tokens, size_t* n_tok, ParseError* error)
 {
     double val = 0;
-    int n_var = -1;
+    size_t n_var = SIZE_MAX;
 
     if (CUR_TYPE == LEX_TYPE_NUM)
     {
@@ -278,7 +301,7 @@ Node* try_item (const Darray* tokens, size_t* n_tok, ParseError* error)
     {
         n_var = VAR_NUMBER;
         (*n_tok)++;
-        return create_node (LEX_TYPE_VAR, n_var, NULL, NULL, error);
+        return create_node (LEX_TYPE_VAR, (double) n_var, NULL, NULL, error);
     }
     else
     {
@@ -287,9 +310,8 @@ Node* try_item (const Darray* tokens, size_t* n_tok, ParseError* error)
     }
 }
 
-bool couple_oper (const Darray* tokens, size_t n_tok_)
+bool couple_oper (const Darray* tokens, size_t* n_tok)
 {
-    size_t* n_tok = &n_tok_; // TODO: стрёмный костыль
     if (CUR_TYPE == LEX_TYPE_OPER)
         if (!OPERS[(int) CUR_OPER].is_func)
             return true;
@@ -297,51 +319,83 @@ bool couple_oper (const Darray* tokens, size_t n_tok_)
     return false;
 }
 
-Node* create_node (LexType type, double value, Node* left, Node* right, ParseError* error) // TODO: в отельную бибилиотеку
+ParseError write_tree_in_file (const Node* root, char* text_tree, FILE* output_file) // TODO: распечатку вынести в фронтенд
 {
-    Node* new_node = (Node*) calloc (1, sizeof (Node));
-
-    if (new_node == NULL)
+    size_t tree_text_size = 0;
+    ParseError error = get_text_tree (root, text_tree, &tree_text_size);
+    if (error)
     {
-        *error = PARSE_ERROR_CALLOC;
-        return NULL;
+        parse_print_error (error);
+        return error;
     }
 
-    new_node->elem.type = type;
+    printf ("TEXT:: %s\n", text_tree);
 
-    switch (type)
-    {
-        case LEX_TYPE_OPER:
-            new_node->elem.elem.oper = (LexOperator) value;
-            break;
-        case LEX_TYPE_NUM:
-            new_node->elem.elem.num = value;
-            break;
-        case LEX_TYPE_VAR:
-            new_node->elem.elem.var_number = (size_t) value;
-            break;
-        default:
-            *error = PARSE_ERROR_SYNTAX;
-            return NULL;
-    }
+    size_t num_written = fwrite (text_tree, sizeof (char), tree_text_size, output_file);
+    if (num_written != tree_text_size)
+        return PARSE_ERROR_FWRITE;
 
-    new_node->left = left;
-    new_node->right = right;
-
-    return new_node;
+    return PARSE_ERROR_OK;
 }
 
-void tree_dtor (Node* root)
+ParseError get_text_tree (const Node* node, char* text_tree, size_t* text_size)
 {
-    assert (root != NULL);
+    printf ("Зашёл в гет текст три\n\n\n");
+    if (node != NULL)
+    {
+        LexType node_type = node->elem.type;
 
-    if (root->left != NULL)
-        tree_dtor (root->left);
+        switch (node_type)
+        {
+            case LEX_TYPE_OPER:
+            {
+                int oper = (int) node->elem.elem.oper;
+                int length = 0;
+                sprintf (text_tree + *text_size, "#%d#%d%n", node_type, oper, &length);
+                (*text_size) += length;
+                break;
+            }
+            case LEX_TYPE_NUM:
+            {
+                double num = node->elem.elem.num;
+                int length = 0;
+                sprintf (text_tree + *text_size, "#%d#%g%n", node_type, num, &length);
+                (*text_size) += length;
+                break;
+            }
+            case LEX_TYPE_VAR:
+            {
+                int var_number = (int) node->elem.elem.var_number;
+                int length = 0;
+                sprintf (text_tree + *text_size, "#%d#%d%n", node_type, var_number, &length);
+                (*text_size) += length;
+                break;
+            }
+            case LEX_TYPE_TXT:
+            default:
+                return PARSE_ERROR_SYNTAX;
+        }
 
-    if (root->right != NULL)
-        tree_dtor (root->right);
+        ParseError error = get_text_tree (node->left, text_tree, text_size);
+        if (error)
+        {
+            parse_print_error (error);
+            return error;
+        }
 
-    free (root);
+        error = get_text_tree (node->right, text_tree, text_size); // TODO: подумать, как убрать копипаст
+        if (error)
+        {
+            parse_print_error (error);
+            return error;
+        } // TODO: обернуть в макрос
+    }
+    else
+    {
+        text_tree[(*text_size)++] = '_';
+    }
+
+    return PARSE_ERROR_OK;
 }
 
 void parse_set_log_file (FILE* file)
@@ -364,6 +418,8 @@ const char* parse_get_error (ParseError error)
             return "Parse: Синтаксическая ошибка.";
         case PARSE_ERROR_CALLOC:
             return "Parse: Ошибка calloc.";
+        case PARSE_ERROR_FWRITE:
+            return "Parse: Ошибка fwrite.";
         default:
             return "Parse: Нужной ошибки не найдено...";
     }

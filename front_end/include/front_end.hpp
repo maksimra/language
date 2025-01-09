@@ -3,7 +3,6 @@
 
 #include "dyn_array.hpp"
 #include "lexer.hpp"
-// #include "build_tree.hpp"
 
 enum FrontError
 {
@@ -23,9 +22,10 @@ struct FrontInfo
 {
     FILE* input_file;
     size_t size_of_file;
-    Darray tokens;
     char* input_buffer;
+    Darray tokens;
     FILE* output_file;
+    char* output_buffer;
     Darray vars;
 };
 

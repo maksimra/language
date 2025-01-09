@@ -90,7 +90,7 @@ bool        try_parenthesis       (Darray* tok, char** buffer, LexError* error);
 bool        try_function          (Darray* tokens, char** buffer, LexError* error);
 bool        try_var               (Darray* tokens, Darray* vars, char** buffer, LexError* error);
 LexOperator search_oper           (char* str, size_t len);
-size_t      search_var            (Darray* tokens, Darray* vars, char* begin, size_t len);
+size_t      search_var            (Darray* vars, char* begin, size_t len);
 LexOperator search_char_operation (char* buffer);
 LexError    fill_new_var          (Darray* vars, char* name, size_t len);
 LexError    fill_token_oper       (Darray* tokens, LexOperator oper);

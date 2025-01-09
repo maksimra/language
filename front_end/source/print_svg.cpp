@@ -44,7 +44,6 @@ GraphError graphviz (const Node* node, const Darray* vars, FILE* file)
 
     GraphError error = print_connections (node, vars, file);
     print_end (file);
-    fclose (file);
 
     if (error)
         return error;

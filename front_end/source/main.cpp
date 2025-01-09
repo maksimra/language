@@ -47,19 +47,19 @@ int main (const int argc, const char* argv[])
     {
         frontend_print_error (front_error);
         fprintf (stderr, "Frontend error.\n");
-        // frontend_dtor (&front);
+        frontend_dtor (&front);
         exit_code = EXIT_FAILURE;
         goto termination;
     }
 
-    // front_error = frontend_dtor (&front);
-    // if (front_error)
-    // {
-    //     frontend_print_error (front_error);
-    //     fprintf (stderr, "Error dtor FrontStruct.\n");
-    //     exit_code = EXIT_FAILURE;
-    //     goto termination;
-    // }
+    front_error = frontend_dtor (&front);
+    if (front_error)
+    {
+        frontend_print_error (front_error);
+        fprintf (stderr, "Error dtor FrontStruct.\n");
+        exit_code = EXIT_FAILURE;
+        goto termination;
+    }
 
 termination:
     fclose (log_file);
