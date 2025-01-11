@@ -9,7 +9,7 @@ enum GraphError
     GRAPH_ERROR_NODE_TYPE = 1
 };
 
-GraphError  graphviz           (const Node* node, const Darray* vars, FILE* file);
+GraphError  graphviz           (const Node* node, const Darray* vars);
 void        print_start        (FILE* file);
 GraphError  print_connections  (const Node* node, const Darray* vars, FILE* file);
 void        print_end          (FILE* file);

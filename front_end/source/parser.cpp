@@ -9,6 +9,7 @@
 
 #define CUR_TYPE   ((LexInfo*) tokens->data + *n_tok)->type
 #define CUR_OPER   ((LexInfo*) tokens->data + *n_tok)->elem.oper
+#define CUR_DEL    ((LexInfo*) tokens->data + *n_tok)->elem.delim
 #define CUR_SYMBOL ((LexInfo*) tokens->data + *n_tok)->elem.symbol
 #define CUR_NUMBER ((LexInfo*) tokens->data + *n_tok)->elem.num
 #define VAR_NUMBER ((LexInfo*) tokens->data + *n_tok)->elem.var_number
@@ -26,24 +27,25 @@ Node* parse (const Darray* tokens, ParseError* error)
     do
     {
         Node* node = get_assign (tokens, &cur_token_number, error);
-
-        if (CUR_TYPE != LEX_TYPE_OPER && CUR_OPER != LEX_OPER_SEMICOLON)
+        if (CUR_TYPE != LEX_TYPE_DELIM && CUR_DEL != LEX_DEL_SEMICOLON)
         {
             *error = PARSE_ERROR_SYNTAX;
-            return NULL;
+
+            val->right = node; // Привязываю для правильной очистки
+            return root;
         }
 
         cur_token_number++;
 
         TreeError tree_error = TREE_ERROR_OK;
-        Node* semicolon_node = create_node (LEX_TYPE_OPER, LEX_OPER_SEMICOLON,
+        Node* semicolon_node = create_node (LEX_TYPE_DELIM, LEX_DEL_SEMICOLON,
                                             node,
                                             NULL, &tree_error);
         if (tree_error)
         {
             tree_print_error (tree_error);
             *error = PARSE_ERROR_TREE;
-            return NULL;
+            return root;
         } // TODO: в макрос обернуть
 
         if (val != NULL)
@@ -79,13 +81,12 @@ Node* get_assign (const Darray* tokens, size_t* n_tok, ParseError* error)
 
             if (tree_error)
             {
-                tree_printf_error (tree_error);
+                tree_print_error (tree_error);
                 *error = PARSE_ERROR_TREE;
-                return NULL;
+                return NULL; // TODO: макрос!!!
             }
-            return create_node (LEX_TYPE_OPER, (double) LEX_OPER_ASSIGN,
-                                create_node (LEX_TYPE_VAR, (double) var_number, NULL, NULL, &tree_error),
-                                get_expr (tokens, n_tok, error), &tree_error);
+
+            return val;
         }
     }
     return get_expr (tokens, n_tok, error);
@@ -108,16 +109,23 @@ Node* get_expr (const Darray* tokens, size_t* n_tok, ParseError* error)
             return NULL;
         }
 
+        TreeError tree_error = TREE_ERROR_OK;;
         val = create_node (LEX_TYPE_OPER, LEX_OPER_MUL,
-                           create_node (LEX_TYPE_NUM, -1, NULL, NULL, error),
-                           try_mult (tokens, n_tok, error), error);
+                           create_node (LEX_TYPE_NUM, -1, NULL, NULL, &tree_error),
+                           try_mult (tokens, n_tok, error), &tree_error);
+        if (tree_error)
+        {
+            tree_print_error (tree_error);
+            *error = PARSE_ERROR_TREE;
+            return NULL;
+        }
     }
     else
     {
         val = try_mult (tokens, n_tok, error);
     }
     while (CUR_TYPE == LEX_TYPE_OPER &&
-           (CUR_OPER == LEX_OPER_ADD || CUR_OPER == LEX_OPER_SUB))
+          (CUR_OPER == LEX_OPER_ADD || CUR_OPER == LEX_OPER_SUB))
     {
         LexOperator oper = CUR_OPER;
         (*n_tok)++;
@@ -133,10 +141,19 @@ Node* get_expr (const Darray* tokens, size_t* n_tok, ParseError* error)
         }
 
         Node* val2 = try_mult (tokens, n_tok, error);
+
+        TreeError tree_error = TREE_ERROR_OK; // TODO: спросить, насколько норм так обрабатывать ошибки и норм ли забивать в некоторых случаях (когда в return)
         if (oper == LEX_OPER_ADD)
-            val = create_node (LEX_TYPE_OPER, LEX_OPER_ADD, val, val2, error);
+            val = create_node (LEX_TYPE_OPER, LEX_OPER_ADD, val, val2, &tree_error);
         else
-            val = create_node (LEX_TYPE_OPER, LEX_OPER_SUB, val, val2, error);
+            val = create_node (LEX_TYPE_OPER, LEX_OPER_SUB, val, val2, &tree_error);
+
+        if (tree_error)
+        {
+            tree_print_error (tree_error);
+            *error = PARSE_ERROR_TREE;
+            return NULL;
+        }
     }
     return val;
 }
@@ -159,13 +176,23 @@ Node* try_pow (const Darray* tokens, size_t* n_tok, ParseError* error)
         }
 
         Node* val2 = try_parenthesis (tokens, n_tok, error);
-        val = create_node (LEX_TYPE_OPER, LEX_OPER_POW, val, val2, error);
+
+        TreeError tree_error = TREE_ERROR_OK;
+        val = create_node (LEX_TYPE_OPER, LEX_OPER_POW, val, val2, &tree_error);
+
+        if (tree_error)
+        {
+            tree_print_error (tree_error);
+            *error = PARSE_ERROR_TREE;
+            return NULL;
+        }
 
         if (CUR_TYPE == LEX_TYPE_OPER && CUR_OPER == LEX_OPER_POW)
         {
             *error = PARSE_ERROR_SYNTAX;
             fprintf (stderr, "Введено некорректное выражение: "
                              "используйте скобки для записи.\n");
+            return NULL;
         }
     }
     return val;
@@ -181,7 +208,7 @@ Node* try_func (const Darray* tokens, size_t* n_tok, ParseError* error)
         if (CUR_TYPE == LEX_TYPE_OPER)
         {
             *error = PARSE_ERROR_SYNTAX;
-            fprintf (stderr, "Введено некорректное выражение: оператор \"%s\" сразу после оператора \"%s\"."
+            fprintf (stderr, "5Введено некорректное выражение: оператор \"%s\" сразу после оператора \"%s\"."
                              "Работа программы завершена досрочно :(\n", OPERS[(int) CUR_OPER].name,
                                                                          OPERS[(int) PREV_OPER].name);
             return NULL;
@@ -200,26 +227,30 @@ Node* try_func (const Darray* tokens, size_t* n_tok, ParseError* error)
         Node* val = get_expr (tokens, n_tok, error);
 
         if (CUR_TYPE == LEX_TYPE_TXT && CUR_SYMBOL != ')')
+        {
             *error = PARSE_ERROR_SYNTAX;
+            return NULL;
+        }
 
         (*n_tok)++;
 
+        TreeError tree_error = TREE_ERROR_OK;
         switch (OPERS[n_oper].op_enum)
         {
             case LEX_OPER_SIN:
-                val = create_node (LEX_TYPE_OPER, LEX_OPER_SIN,  NULL, val, error);
+                val = create_node (LEX_TYPE_OPER, LEX_OPER_SIN,  NULL, val, &tree_error);
                 return val;
             case LEX_OPER_COS:
-                val = create_node (LEX_TYPE_OPER, LEX_OPER_COS,  NULL, val, error);
+                val = create_node (LEX_TYPE_OPER, LEX_OPER_COS,  NULL, val, &tree_error);
                 return val;
             case LEX_OPER_LN:
-                val = create_node (LEX_TYPE_OPER, LEX_OPER_LN,   NULL, val, error);
+                val = create_node (LEX_TYPE_OPER, LEX_OPER_LN,   NULL, val, &tree_error);
                 return val;
             case LEX_OPER_SQRT:
-                val = create_node (LEX_TYPE_OPER, LEX_OPER_SQRT, NULL, val, error);
+                val = create_node (LEX_TYPE_OPER, LEX_OPER_SQRT, NULL, val, &tree_error);
                 return val;
             case LEX_OPER_EXP:
-                val = create_node (LEX_TYPE_OPER, LEX_OPER_EXP,  NULL, val, error);
+                val = create_node (LEX_TYPE_OPER, LEX_OPER_EXP,  NULL, val, &tree_error);
                 return val;
             case LEX_OPER_ADD:
             case LEX_OPER_SUB:
@@ -227,10 +258,17 @@ Node* try_func (const Darray* tokens, size_t* n_tok, ParseError* error)
             case LEX_OPER_DIV:
             case LEX_OPER_POW:
             case LEX_OPER_ASSIGN:
-            case LEX_OPER_SEMICOLON:
             case LEX_OPER_NONE:
             default:
                 *error = PARSE_ERROR_SYNTAX;
+                return NULL;
+        }
+
+        if (tree_error)
+        {
+            tree_print_error (tree_error);
+            *error = PARSE_ERROR_TREE;
+            return NULL;
         }
     }
     return try_pow (tokens, n_tok, error);
@@ -244,7 +282,10 @@ Node* try_parenthesis (const Darray* tokens, size_t* n_tok, ParseError* error)
         Node* val = get_expr (tokens, n_tok, error);
 
         if (CUR_TYPE == LEX_TYPE_TXT && CUR_SYMBOL != ')')
+        {
             *error = PARSE_ERROR_SYNTAX;
+            return NULL;
+        }
 
         (*n_tok)++;
 
@@ -258,7 +299,7 @@ Node* try_mult (const Darray* tokens, size_t* n_tok, ParseError* error)
 {
     Node* val = try_func (tokens, n_tok, error);
     while (CUR_TYPE == LEX_TYPE_OPER &&
-           (CUR_OPER == LEX_OPER_MUL || CUR_OPER == LEX_OPER_DIV))
+          (CUR_OPER == LEX_OPER_MUL || CUR_OPER == LEX_OPER_DIV))
     {
         LexOperator oper = CUR_OPER;
         (*n_tok)++;
@@ -274,13 +315,17 @@ Node* try_mult (const Darray* tokens, size_t* n_tok, ParseError* error)
         }
         Node* val2 = try_func (tokens, n_tok, error);
 
+        TreeError tree_error = TREE_ERROR_OK;
         if (oper == LEX_OPER_MUL) // TODO: здесь падает
-        {
-            val = create_node (LEX_TYPE_OPER, LEX_OPER_MUL, val, val2, error);
-        }
+            val = create_node (LEX_TYPE_OPER, LEX_OPER_MUL, val, val2, &tree_error);
         else
+            val = create_node (LEX_TYPE_OPER, LEX_OPER_DIV, val, val2, &tree_error);
+
+        if (tree_error)
         {
-            val = create_node (LEX_TYPE_OPER, LEX_OPER_DIV, val, val2, error);
+            tree_print_error (tree_error);
+            *error = PARSE_ERROR_TREE;
+            return NULL;
         }
     }
     return val;
@@ -288,26 +333,38 @@ Node* try_mult (const Darray* tokens, size_t* n_tok, ParseError* error)
 
 Node* try_item (const Darray* tokens, size_t* n_tok, ParseError* error)
 {
+    Node* new_node = NULL;
     double val = 0;
     size_t n_var = SIZE_MAX;
+    TreeError tree_error = TREE_ERROR_OK;
 
     if (CUR_TYPE == LEX_TYPE_NUM)
     {
         val = CUR_NUMBER;
         (*n_tok)++;
-        return create_node (LEX_TYPE_NUM, val, NULL, NULL, error);
+        tree_error = TREE_ERROR_OK;
+        new_node = create_node (LEX_TYPE_NUM, val, NULL, NULL, &tree_error);
     }
     else if (CUR_TYPE == LEX_TYPE_VAR)
     {
         n_var = VAR_NUMBER;
         (*n_tok)++;
-        return create_node (LEX_TYPE_VAR, (double) n_var, NULL, NULL, error);
+        tree_error = TREE_ERROR_OK;
+        new_node = create_node (LEX_TYPE_VAR, (double) n_var, NULL, NULL, &tree_error);
     }
     else
     {
         *error = PARSE_ERROR_SYNTAX;
         return NULL;
     }
+
+    if (tree_error)
+    {
+        tree_print_error (tree_error);
+        *error = PARSE_ERROR_TREE;
+        return NULL;
+    }
+    return new_node;
 }
 
 bool couple_oper (const Darray* tokens, size_t* n_tok)
@@ -340,7 +397,6 @@ ParseError write_tree_in_file (const Node* root, char* text_tree, FILE* output_f
 
 ParseError get_text_tree (const Node* node, char* text_tree, size_t* text_size)
 {
-    printf ("Зашёл в гет текст три\n\n\n");
     if (node != NULL)
     {
         LexType node_type = node->elem.type;
@@ -368,6 +424,14 @@ ParseError get_text_tree (const Node* node, char* text_tree, size_t* text_size)
                 int var_number = (int) node->elem.elem.var_number;
                 int length = 0;
                 sprintf (text_tree + *text_size, "#%d#%d%n", node_type, var_number, &length);
+                (*text_size) += length;
+                break;
+            }
+            case LEX_TYPE_DELIM:
+            {
+                int delim = (int) node->elem.elem.delim;
+                int length = 0;
+                sprintf (text_tree + *text_size, "#%d#%d%n", node_type, delim, &length);
                 (*text_size) += length;
                 break;
             }

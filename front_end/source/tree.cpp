@@ -1,15 +1,17 @@
 #include <stdio.h>
+#include <assert.h>
 #include "../include/tree.hpp"
+#include "../include/print_in_log.hpp"
 
-static FILE* file = stderr;
+static FILE* log_file = stderr;
 
-Node* create_node (LexType type, double value, Node* left, Node* right, ParseError* error)
+Node* create_node (LexType type, double value, Node* left, Node* right, TreeError* error)
 {
     Node* new_node = (Node*) calloc (1, sizeof (Node));
 
     if (new_node == NULL)
     {
-        *error = PARSE_ERROR_CALLOC;
+        *error = TREE_ERROR_CALLOC;
         return NULL;
     }
 
@@ -26,9 +28,12 @@ Node* create_node (LexType type, double value, Node* left, Node* right, ParseErr
         case LEX_TYPE_VAR:
             new_node->elem.elem.var_number = (size_t) value;
             break;
+        case LEX_TYPE_DELIM:
+            new_node->elem.elem.delim = (LexDelim) value;
+            break;
         case LEX_TYPE_TXT:
         default:
-            *error = PARSE_ERROR_SYNTAX;
+            *error = TREE_ERROR_TYPE;
             return NULL;
     }
 
@@ -64,6 +69,8 @@ const char* tree_get_error (TreeError error)
             return "Tree: Ошибок не обнаружено.";
         case TREE_ERROR_CALLOC:
             return "Tree: Ошибка calloc.";
+        case TREE_ERROR_TYPE:
+            return "Tree: Ошибка типа.";
         default:
             return "Tree: Нужной ошибки не найдено...";
     }

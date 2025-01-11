@@ -91,6 +91,7 @@ FrontError frontend_ctor(FrontInfo *front, const char *name_of_input_file, const
     }
 
     proc_file_error = read_file_count_size(name_of_input_file, front->input_file, &(front->size_of_file), &(front->input_buffer));
+    printf("INPUT_BUFFER:\n%s\n", front->input_buffer);
     if (proc_file_error)
     {
         proc_file_print_error(proc_file_error);
@@ -134,7 +135,6 @@ FrontError frontend_pass(FrontInfo *front)
     Node* syntax_tree = parse(&(front->tokens), &parse_error);
     if (parse_error)
     {
-        tree_dtor (syntax_tree);
         parse_print_error(parse_error);
         return FRONT_ERROR_PARSE;
     }

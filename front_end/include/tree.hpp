@@ -6,7 +6,8 @@
 enum TreeError
 {
     TREE_ERROR_OK     = 0,
-    TREE_ERROR_CALLOC = 1
+    TREE_ERROR_CALLOC = 1,
+    TREE_ERROR_TYPE   = 2
 };
 
 struct Node

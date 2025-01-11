@@ -35,15 +35,17 @@ const char* graph_get_error (GraphError error)
     }
 }
 
-GraphError graphviz (const Node* node, const Darray* vars, FILE* file)
+GraphError graphviz (const Node* node, const Darray* vars)
 {
     assert (node != NULL);
-    assert (file != NULL);
 
+    FILE* file = fopen("graphviz.txt", "w");
     print_start (file);
 
     GraphError error = print_connections (node, vars, file);
     print_end (file);
+
+    fclose (file);
 
     if (error)
         return error;
@@ -83,28 +85,39 @@ GraphError draw_right (const Node* node, const Darray* vars, FILE* file)
         else
             color = "green";
 
+        const char* name = (node->elem.type == LEX_TYPE_OPER) ?
+                           OPERS[(int) node->elem.elem.oper].name :
+                           DELIMS[(int) node->elem.elem.delim].name;
+
         switch (node->right->elem.type)
         {
             case LEX_TYPE_OPER:
                 fprintf (file, "{\"%s\n%p\"--\"%s\n%p\"[color = \"%s\"]};\n",
-                               OPERS[(int) node->elem.elem.oper].name ,
+                               name,
                                node,
                                OPERS[(int) node->right->elem.elem.oper].name,
                                node->right, color);
                 break;
             case LEX_TYPE_NUM:
                 fprintf (file, "{\"%s\n%p\"--\"%.3lf\n%p\"[color = \"%s\"]};\n",
-                               OPERS[(int) node->elem.elem.oper].name,
+                               name,
                                node,
                                node->right->elem.elem.num,
                                node->right, color);
                 break;
             case LEX_TYPE_VAR:
                 fprintf (file, "{\"%s\n%p\"--\"%.*s\n%p\"[color = \"%s\"]};\n",
-                               OPERS[(int) node->elem.elem.oper].name,
+                               name,
                                node,
                                RIGHT_VAR_LEN,
                                RIGHT_VAR_NAME,
+                               node->right, color);
+                break;
+            case LEX_TYPE_DELIM:
+                fprintf (file, "{\"%s\n%p\"--\"%s\n%p\"[color = \"%s\"]};\n",
+                               name,
+                               node,
+                               DELIMS[(int) node->right->elem.elem.delim].name,
                                node->right, color);
                 break;
             case LEX_TYPE_TXT:
@@ -128,30 +141,39 @@ GraphError draw_left (const Node* node, const Darray* vars, FILE* file)
         else
             color = "green";
 
+        const char* name = (node->elem.type == LEX_TYPE_OPER) ?
+                           OPERS[(int) node->elem.elem.oper].name :
+                           DELIMS[(int) node->elem.elem.delim].name;
+
         switch (node->left->elem.type)
         {
             case LEX_TYPE_OPER:
-            {
                 fprintf (file, "{\"%s\n%p\"--\"%s\n%p\"[color = \"%s\"]};\n",
-                               OPERS[(int) node->elem.elem.oper].name,
+                               name,
                                node,
                                OPERS[(int) node->left->elem.elem.oper].name,
                                node->left, color);
-            }
                 break;
             case LEX_TYPE_NUM:
                 fprintf (file, "{\"%s\n%p\"--\"%.3lf\n%p\"[color = \"%s\"]};\n",
-                               OPERS[(int) node->elem.elem.oper].name,
+                               name,
                                node,
                                node->left->elem.elem.num,
                                node->left, color);
                 break;
             case LEX_TYPE_VAR:
                 fprintf (file, "{\"%s\n%p\"--\"%.*s\n%p\"[color = \"%s\"]};\n",
-                               OPERS[(int) node->elem.elem.oper].name,
+                               name,
                                node,
                                LEFT_VAR_LEN,
                                LEFT_VAR_NAME,
+                               node->left, color);
+                break;
+            case LEX_TYPE_DELIM:
+                fprintf (file, "{\"%s\n%p\"--\"%s\n%p\"[color = \"%s\"]};\n",
+                               name,
+                               node,
+                               OPERS[(int) node->left->elem.elem.delim].name,
                                node->left, color);
                 break;
             case LEX_TYPE_TXT:

@@ -15,7 +15,7 @@ void          proc_file_set_log_file   (FILE* file);
 ProcFileError process_file             (char*** ptr_to_lines, const char* name_of_file, FILE* file, size_t* number_lines);
 ProcFileError read_file_count_size     (const char* name_of_file, FILE* file, size_t* size, char** buffer);
 size_t        line_processing          (size_t size, char* buffer);
-ProcFileError make_ptr_to_lines        (size_t number_lines, char* buffer, char*** lines);
+ProcFileError make_ptr_to_lines        (size_t number_lines, char* buffer, size_t buffer_size, char*** lines);
 void          proc_file_print_error    (ProcFileError error);
 const char*   proc_file_get_error      (ProcFileError error);
 

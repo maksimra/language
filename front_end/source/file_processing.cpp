@@ -58,11 +58,13 @@ ProcFileError read_file_count_size(const char *name_of_file, FILE *file, size_t 
     if (file == NULL)
         return PROC_FILE_ERROR_PTR_TO_FILE;
 
-    *buffer = (char *)calloc(*size, sizeof(char));
+    *buffer = (char *)calloc(*size + 1, sizeof(char));
     if (*buffer == NULL)
         return PROC_FILE_ERROR_CALLOC;
 
     size_t fread_size = fread(*buffer, sizeof(char), *size, file);
+    (*buffer)[*size] = '\0';
+
     if (fread_size != *size)
         return PROC_FILE_ERROR_FREAD;
 

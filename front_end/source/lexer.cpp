@@ -24,8 +24,8 @@ LexError get_token (Darray* tokens, Darray* vars, char* input_buffer) // TODO: �
 
     while (*input_buffer != '\0')
     {
-        printf ("new char = %c\n", *input_buffer);
         if (try_char_operation (tokens, &(input_buffer), &error) ||
+            try_delim          (tokens, &(input_buffer), &error) ||
             try_digit          (tokens, &(input_buffer), &error) ||
             try_parenthesis    (tokens, &(input_buffer), &error) ||
             try_function       (tokens, &(input_buffer), &error) ||
@@ -47,7 +47,6 @@ bool try_var (Darray* tokens, Darray* vars, char** buffer, LexError* error)
 {
     if (isalpha (**buffer))
     {
-        printf ("first_char_name var = %c\n\n", **buffer);
         char* start_position = *buffer;
 
         (*buffer)++;
@@ -142,6 +141,18 @@ bool try_char_operation (Darray* tokens, char** buffer, LexError* error)
     return false;
 }
 
+bool try_delim (Darray* tokens, char** buffer, LexError* error)
+{
+    LexDelim delim = search_delim (*buffer);
+    if (delim != LEX_DEL_NONE)
+    {
+        (*buffer)++;
+        *error = fill_token_delim (tokens, delim);
+        return true;
+    }
+    return false;
+}
+
 void token_dump (const Darray* tokens, const Darray* vars) // TODO: исправить кринж darray
 {
     for (size_t pass = 0; pass < tokens->size; pass++)
@@ -159,6 +170,9 @@ void token_dump (const Darray* tokens, const Darray* vars) // TODO: исправ
                 break;
             case LEX_TYPE_TXT:
                 printf ("TXT: %zu --> %c\n",   pass, ((LexInfo*) tokens->data + pass)->elem.symbol);
+                break;
+            case LEX_TYPE_DELIM:
+                printf ("DELIM: %zu --> %s\n", pass, DELIMS[(int) ((LexInfo*) tokens->data + pass)->elem.delim].name);
                 break;
             default:
                 assert (0);
@@ -217,6 +231,21 @@ LexError fill_token_oper (Darray* tokens, LexOperator oper)
     return LEX_ERROR_OK;
 }
 
+LexError fill_token_delim (Darray* tokens, LexDelim delim)
+{
+    LexElem elem = {.delim = delim};
+    LexInfo token = {LEX_TYPE_DELIM, elem};
+
+    DynArrError stk_error = dyn_array_push (tokens, &token);
+    if (stk_error)
+    {
+        dyn_array_print_error (stk_error);
+        return LEX_ERROR_DYN_ARR;
+    }
+
+    return LEX_ERROR_OK;
+}
+
 LexError fill_token_double (Darray* tokens, char** buffer)
 {
     char* old_pointer = *buffer;
@@ -248,6 +277,16 @@ LexOperator search_char_operation (char* buffer)
         }
     }
     return LEX_OPER_NONE;
+}
+
+LexDelim search_delim (char* buffer)
+{
+    for (int num_of_del = 1; num_of_del < NUM_DELS; num_of_del++)
+    {
+        if (strncmp (buffer, DELIMS[num_of_del].name, sizeof (char)) == 0)
+            return DELIMS[num_of_del].delim_enum;
+    }
+    return LEX_DEL_NONE;
 }
 
 const char* lex_get_error (LexError error)

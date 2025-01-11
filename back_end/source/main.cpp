@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../include/check_args.hpp"
-#include "../include/front_end.hpp"
-#include "../include/file_processing.hpp"
+#include "../include/back_end.hpp"
 
 int main (const int argc, const char* argv[])
 {
@@ -15,13 +14,12 @@ int main (const int argc, const char* argv[])
     int return_value = setvbuf (log_file, NULL, _IONBF, 0);
     if (return_value)
     {
-        frontend_print_error (FRONT_ERROR_SETVBUF);
+        backend_print_error (BACK_ERROR_SETVBUF);
     }
 
     args_set_log_file      (log_file);
-    frontend_set_log_file  (log_file);
+    backend_set_log_file   (log_file);
     dyn_array_set_log_file (log_file);
-    proc_file_set_log_file (log_file);
 
     const int necessary_n_args = 3;
     ArgsError args_error = args_check (argc, necessary_n_args);
@@ -32,34 +30,34 @@ int main (const int argc, const char* argv[])
         return exit_code;
     }
 
-    FrontError front_error = FRONT_ERROR_OK;
-    FrontInfo front = {};
+    BackError back_error = BACK_ERROR_OK;
+    BackInfo back = {};
     const char* name_of_input_file  = argv[1];
     const char* name_of_output_file = argv[2];
-    front_error = frontend_ctor (&front, name_of_input_file, name_of_output_file);
-    if (front_error)
+    back_error = backend_ctor (&back, name_of_input_file, name_of_output_file);
+    if (back_error)
     {
-        frontend_print_error (front_error);
-        fprintf (stderr, "Error initializing FrontStruct.\n");
+        backend_print_error (back_error);
+        fprintf (stderr, "Error initializing BackStruct.\n");
         exit_code = EXIT_FAILURE;
         goto termination;
     }
 
-    front_error = frontend_pass (&front);
-    if (front_error)
+    back_error = backend_pass (&back);
+    if (back_error)
     {
-        frontend_print_error (front_error);
-        fprintf (stderr, "Frontend error.\n");
-        frontend_dtor (&front);
+        backend_print_error (back_error);
+        fprintf (stderr, "Backend error.\n");
+        backend_dtor (&back);
         exit_code = EXIT_FAILURE;
         goto termination;
     }
 
-    front_error = frontend_dtor (&front);
-    if (front_error)
+    back_error = backend_dtor (&back);
+    if (back_error)
     {
-        frontend_print_error (front_error);
-        fprintf (stderr, "Error dtor FrontStruct.\n");
+        backend_print_error (back_error);
+        fprintf (stderr, "Error dtor BackStruct.\n");
         exit_code = EXIT_FAILURE;
         goto termination;
     }
