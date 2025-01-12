@@ -1,7 +1,7 @@
 #ifndef PRINT_SVG_HPP
 #define PRINT_SVG_HPP
 
-#include "../include/parser.hpp"
+#include "../core/tree.hpp"
 
 enum GraphError
 {

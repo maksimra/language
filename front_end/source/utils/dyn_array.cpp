@@ -1,8 +1,8 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include "../include/dyn_array.hpp"
-#include "../include/print_in_log.hpp"
+#include "../include/utils/dyn_array.hpp"
+#include "../include/io/print_in_log.hpp"
 
 const size_t UP_COEFF = 2;
 

@@ -1,7 +1,7 @@
 #ifndef LEXER_HPP
 #define LEXER_HPP
 
-#include "dyn_array.hpp"
+#include "../utils/dyn_array.hpp"
 
 enum LexError
 {

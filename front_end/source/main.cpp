@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../include/check_args.hpp"
-#include "../include/front_end.hpp"
-#include "../include/file_processing.hpp"
+#include "../include/utils/check_args.hpp"
+#include "../include/core/front_end.hpp"
+#include "../include/io/file_processing.hpp"
 
 int main (const int argc, const char* argv[])
 {

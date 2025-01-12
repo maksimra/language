@@ -1,5 +1,5 @@
-#include "../include/check_args.hpp"
-#include "../include/print_in_log.hpp"
+#include "../include/utils/check_args.hpp"
+#include "../include/io/print_in_log.hpp"
 
 static FILE* log_file = stderr;
 

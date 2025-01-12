@@ -2,10 +2,10 @@
 #include <assert.h>
 #include <cstdint>
 #include <cstring>
-#include "../include/parser.hpp"
-#include "../include/lexer.hpp"
-#include "../include/dyn_array.hpp"
-#include "../include/print_in_log.hpp"
+#include "../include/core/parser.hpp"
+#include "../include/core/lexer.hpp"
+#include "../include/utils/dyn_array.hpp"
+#include "../include/io/print_in_log.hpp"
 
 #define CUR_TYPE   ((LexInfo*) tokens->data + *n_tok)->type
 #define CUR_OPER   ((LexInfo*) tokens->data + *n_tok)->elem.oper

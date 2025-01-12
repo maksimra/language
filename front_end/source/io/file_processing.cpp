@@ -3,8 +3,8 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "../include/file_processing.hpp"
-#include "../include/print_in_log.hpp"
+#include "../include/io/file_processing.hpp"
+#include "../include/io/print_in_log.hpp"
 
 static FILE *log_file = stderr;
 

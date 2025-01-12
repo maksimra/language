@@ -1,7 +1,7 @@
 #ifndef FRONT_END_HPP
 #define FRONT_END_HPP
 
-#include "dyn_array.hpp"
+#include "../utils/dyn_array.hpp"
 #include "lexer.hpp"
 
 enum FrontError
