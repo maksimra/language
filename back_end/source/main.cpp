@@ -13,9 +13,7 @@ int main (const int argc, const char* argv[])
 
     int return_value = setvbuf (log_file, NULL, _IONBF, 0);
     if (return_value)
-    {
         backend_print_error (BACK_ERROR_SETVBUF);
-    }
 
     args_set_log_file      (log_file);
     backend_set_log_file   (log_file);

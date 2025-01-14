@@ -43,10 +43,28 @@ struct LexOpers
     const char* name;
     size_t len;
     bool is_func;
+
+    #ifdef BACKEND
+    void (*asm) (FILE* output_file);
+    #endif
 };
 
 const LexOpers OPERS[] =
 {
+    #ifdef BACKEND
+    {LEX_OPER_NONE},
+    {LEX_OPER_ADD,       "+",    1, false, asm_add},
+    {LEX_OPER_SUB,       "-",    1, false, asm_sub},
+    {LEX_OPER_MUL,       "*",    1, false, asm_mul},
+    {LEX_OPER_DIV,       "/",    1, false, asm_div},
+    {LEX_OPER_POW,       "^",    1, false, asm_pow},
+    {LEX_OPER_ASSIGN,    "=",    1, false, asm_assign},
+    {LEX_OPER_SIN,       "sin",  3, true,  asm_sin},
+    {LEX_OPER_COS,       "cos",  3, true,  asm_cos},
+    {LEX_OPER_LN,        "ln",   2, true,  asm_ln},
+    {LEX_OPER_SQRT,      "sqrt", 4, true,  asm_sqrt},
+    {LEX_OPER_EXP,       "exp",  3, true,  asm_exp}
+    #else
     {LEX_OPER_NONE},
     {LEX_OPER_ADD,       "+",    1, false},
     {LEX_OPER_SUB,       "-",    1, false},
@@ -59,7 +77,22 @@ const LexOpers OPERS[] =
     {LEX_OPER_LN,        "ln",   2, true},
     {LEX_OPER_SQRT,      "sqrt", 4, true},
     {LEX_OPER_EXP,       "exp",  3, true}
+    #endif
 };
+
+#ifdef BACKEND
+void asm_add    (FILE* output_file);
+void asm_sub    (FILE* output_file);
+void asm_mul    (FILE* output_file);
+void asm_div    (FILE* output_file);
+void asm_pow    (FILE* output_file);
+void asm_assign (FILE* output_file);
+void asm_sin    (FILE* output_file);
+void asm_cos    (FILE* output_file);
+void asm_ln     (FILE* output_file);
+void asm_sqrt   (FILE* output_file);
+void asm_exp    (FILE* output_file);
+#endif
 
 const int NUM_OPERS = sizeof (OPERS) / sizeof (OPERS[0]);
 
