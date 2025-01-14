@@ -1,57 +1,59 @@
 #include "../../../front_end/include/core/lexer.hh" // TODO: НАСТРОИТЬ ПУТИ В CMAKE, !ЗАТЕМ!сделать общий cmake для всего проекта
 
+#define PRINT_ASM(str) fprintf(output_file, str)
+
 void asm_add (FILE* output_file)
 {
-    fprintf(output_file, "add\n");
+    PRINT_ASM("add\n");
 }
 
 void asm_sub (FILE* output_file)
 {
-    fprintf(output_file, "sub\n");
+    PRINT_ASM("sub\n");
 }
 
 void asm_mul (FILE* output_file);
 {
-    fprintf(output_file, "mul\n");
+    PRINT_ASM("mul\n");
 }
 
 void asm_div (FILE* output_file)
 {
-    fprintf(output_file, "div\n");
+    PRINT_ASM("div\n");
 }
 
 void asm_pow (FILE* output_file)
 {
-    fprintf(output_file, "pow\n");
+    PRINT_ASM("pow\n");
 }
 
 void asm_assign (FILE* output_file)
 {
-    fprintf(output_file, "pop rax\n"
-                         "pop [rax]\n");
+    PRINT_ASM("pop rax\n"
+              "pop [rax]\n");
 }
 
 void asm_sin (FILE* output_file)
 {
-    fprintf(output_file, "sin\n");
+    PRINT_ASM("sin\n");
 }
 
 void asm_cos (FILE* output_file)
 {
-    fprintf(output_file, "cos\n");
+    PRINT_ASM("cos\n");
 }
 
 void asm_ln (FILE* output_file)
 {
-    fprintf(output_file, "ln\n");
+    PRINT_ASM("ln\n");
 }
 
 void asm_sqrt (FILE* output_file)
 {
-    fprintf(output_file, "sqrt\n");
+    PRINT_ASM("sqrt\n");
 }
 
 void asm_exp (FILE* output_file)
 {
-    fprintf(output_file, "exp\n");
+    PRINT_ASM("exp\n");
 }
