@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
-#include "../include/core/front_end.hpp"
-#include "../include/io/print_in_log.hpp"
-#include "../include/io/file_processing.hpp"
-#include "../include/core/lexer.hpp"
-#include "../include/core/parser.hpp"
-#include "../include/io/print_svg.hpp"
+#include "core/front_end.hpp"
+#include "io/print_in_log.hpp"
+#include "file_processing.hpp"
+#include "lexer.hpp"
+#include "core/parser.hpp"
+#include "io/print_svg.hpp"
 
 const size_t INITIAL_CAPACITY = 25;
 const size_t COEFF_FOR_SIZE_TEXT_TREE = 5;

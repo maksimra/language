@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
-#include "../include/core/tree.hpp"
-#include "../include/io/print_in_log.hpp"
+#include "core/tree.hpp"
+#include "io/print_in_log.hpp"
 
 static FILE* log_file = stderr;
 

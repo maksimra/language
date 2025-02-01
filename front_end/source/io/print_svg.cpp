@@ -1,9 +1,9 @@
 #include <assert.h>
 #include <stdio.h>
-#include "../include/io/print_svg.hpp"
-#include "../include/core/parser.hpp"
-#include "../include/io/print_in_log.hpp"
-#include "../include/utils/dyn_array.hpp"
+#include "io/print_svg.hpp"
+#include "core/parser.hpp"
+#include "io/print_in_log.hpp"
+#include "dyn_array.hpp"
 
 #define LEFT_VAR_NAME  ((Var*) vars->data + node->left->elem.elem.var_number)->name
 #define LEFT_VAR_LEN   (int)(((Var*) vars->data + node->left->elem.elem.var_number)->len)

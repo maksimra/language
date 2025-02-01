@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../include/check_args.hpp"
-#include "../include/back_end.hpp"
+#include "utils/check_args.hpp"
+#include "core/back_end.hpp"
 
 int main (const int argc, const char* argv[])
 {
@@ -9,7 +9,7 @@ int main (const int argc, const char* argv[])
 
     FILE* log_file = fopen ("log_file.txt", "w");
     if (log_file == NULL)
-        printf ("log_file wasn't open.\n");
+        fprintf (stderr, "log_file wasn't open.\n");
 
     int return_value = setvbuf (log_file, NULL, _IONBF, 0);
     if (return_value)
@@ -17,7 +17,6 @@ int main (const int argc, const char* argv[])
 
     args_set_log_file      (log_file);
     backend_set_log_file   (log_file);
-    dyn_array_set_log_file (log_file);
 
     const int necessary_n_args = 3;
     ArgsError args_error = args_check (argc, necessary_n_args);
@@ -51,14 +50,7 @@ int main (const int argc, const char* argv[])
         goto termination;
     }
 
-    back_error = backend_dtor (&back);
-    if (back_error)
-    {
-        backend_print_error (back_error);
-        fprintf (stderr, "Error dtor BackStruct.\n");
-        exit_code = EXIT_FAILURE;
-        goto termination;
-    }
+    backend_dtor (&back); // TODO: пока не возвращает ошибок, потом посмотреть
 
 termination:
     fclose (log_file);

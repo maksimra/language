@@ -1,12 +1,10 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
-#include "../include/back_end.hpp"
-#include "../include/print_in_log.hpp"
-#include "../include/file_processing.hpp"
-#include "../include/lexer.hpp"
-#include "../include/parser.hpp"
-#include "../include/print_svg.hpp"
+#include "core/back_end.hpp"
+#include "io/print_in_log.hpp"
+#include "file_processing.hpp"
+#include "lexer.hpp"
 
 static FILE *log_file = stderr;
 
@@ -48,8 +46,8 @@ BackError backend_ctor(BackInfo* back, const char* name_of_input_file, const cha
         return BACK_ERROR_FOPEN;
 
     BackError     back_error      = BACK_ERROR_OK;
-    DynArrError   dyn_arr_error   = ARR_ERROR_OK;
     ProcFileError proc_file_error = PROC_FILE_NO_ERROR;
+    Node* root_syntax_tree = NULL;
 
     back->output_file = fopen(name_of_output_file, "wb");
     if (back->output_file == NULL)
@@ -58,7 +56,10 @@ BackError backend_ctor(BackInfo* back, const char* name_of_input_file, const cha
         goto close_input_file;
     }
 
-    proc_file_error = read_file_count_size(name_of_input_file, back->input_file, &(back->size_of_file), &(back->input_buffer));
+    proc_file_error = read_file_count_size(name_of_input_file,
+                                           back->input_file,
+                                           &(back->size_of_file),
+                                           &(back->input_buffer));
     if (proc_file_error)
     {
         proc_file_print_error(proc_file_error);
@@ -66,18 +67,18 @@ BackError backend_ctor(BackInfo* back, const char* name_of_input_file, const cha
         goto close_all_files;
     }
 
-    Node* root = create_tree(back->input_buffer,
-                             back->input_buffer + back->size_of_file,
-                             &back_error);
+    root_syntax_tree = create_tree(back->input_buffer,
+                                   back->input_buffer + back->size_of_file,
+                                   &back_error);
 
     if (back_error)
         goto delete_tree;
-    back->root = root;
+    back->root = root_syntax_tree;
 
     goto out;
 
 delete_tree:
-    tree_dtor(root);
+    tree_dtor(root_syntax_tree);
 close_all_files:
     fclose(back->output_file);
 close_input_file:
@@ -88,11 +89,12 @@ out:
 
 Node* create_tree(const char* buffer, const char* buf_end, BackError* error)
 {
-    assert (back);
+    assert (buffer);
+    assert (buf_end);
 
     const int necessary_received_number = 2;
 
-    if (buffer != '#')
+    if (*buffer != '#')
     {
         *error = BACK_ERROR_READ;
         return NULL;
@@ -112,25 +114,49 @@ Node* create_tree(const char* buffer, const char* buf_end, BackError* error)
 
     buffer += received_length;
 
+    TreeError tree_error = TREE_ERROR_OK;
     if (buffer < buf_end && *buffer == '_')
     {
         buffer++;
         if (buffer < buf_end && *buffer == '_')
         {
             buffer++;
-            return create_node((LexType) type, value, NULL, NULL);
+            Node* node = create_node((LexType) type, value, NULL, NULL, &tree_error);
+            if (tree_error)
+            {
+                *error = BACK_ERROR_TREE;
+                return NULL;
+            }
+
+            return node;
         }
-        return create_node((LexType) type, value,
-                           NULL,
-                           create_tree(buffer));
+        Node* node =  create_node((LexType) type, value,
+                                  NULL,
+                                  create_tree(buffer, buf_end, error), &tree_error);
+        if (tree_error)
+        {
+            *error = BACK_ERROR_TREE;
+            return NULL;
+        }
+
+        return node;
     }
 
-    return create_node((LexType) type, value, create_tree(buffer, buf_end, error), create_tree(buffer, buf_end, error));
+    Node* node = create_node((LexType) type, value,
+                             create_tree(buffer, buf_end, error),
+                             create_tree(buffer, buf_end, error), &tree_error);
+    if (tree_error)
+    {
+        *error = BACK_ERROR_TREE;
+        return NULL;
+    } // TODO: макросом
+    return node;
 }
 
-FrontError backend_pass (BackInfo* back)
+BackError backend_pass (BackInfo* back)
 {
     BackError error = create_asm_file(back->output_file, back->root, NULL);
+    return BACK_ERROR_OK;
 }
 
 BackError create_asm_file(FILE* output_file, Node* node, Node* parent)
@@ -149,42 +175,32 @@ BackError create_asm_file(FILE* output_file, Node* node, Node* parent)
                 node == parent->left)
                 return BACK_ERROR_SEMANTICS;
 
-            fprintf(output_file, "push %lg\n", node->elem.num);
+            fprintf(output_file, "push %lg\n", node->elem.elem.num);
             break;
         case LEX_TYPE_VAR:
             if (parent->elem.elem.oper == LEX_OPER_ASSIGN &&
                 node == parent->left)
-                fprintf(output_file, "push %zu\n", node->elem.var_number);
+                fprintf(output_file, "push %zu\n", node->elem.elem.var_number);
             else
-                fprintf(output_file, "push [%zu]\n", node->elem.var_number);
+                fprintf(output_file, "push [%zu]\n", node->elem.elem.var_number);
 
             break;
         case LEX_TYPE_OPER:
-            OPERS[(int) node->elem.elem.oper].func(output_file);
-
+            OPERS[(int) node->elem.elem.oper].gen_asm(output_file);
+        case LEX_TYPE_DELIM:
+            break; // TODO: может кринж, может вообще не работает
+        case LEX_TYPE_TXT:
+        default:
+            return BACK_ERROR_NODE_TYPE;
     }
+
+    return error;
 }
 
-BackError backend_dtor(BackInfo *back)
+void backend_dtor(BackInfo *back)
 {
     fclose (back->input_file);
     fclose (back->output_file);
     free   (back->input_buffer);
-    free   (back->output_buffer);
-    DynArrError dyn_arr_error = ARR_ERROR_OK;
-    dyn_arr_error = dyn_array_dtor(&(back->tokens));
-    if (dyn_arr_error)
-    {
-        dyn_array_print_error(dyn_arr_error);
-        return BACK_ERROR_DYN_ARR;
-    }
-
-    dyn_arr_error = dyn_array_dtor(&(back->vars)); // TODO: спросить, является ли копипастом
-    if (dyn_arr_error)
-    {
-        dyn_array_print_error(dyn_arr_error);
-        return BACK_ERROR_DYN_ARR;
-    } // TODO: в макрос процедуру с проверкой
-
-    return BACK_ERROR_OK;
+    tree_dtor (back->root);
 }

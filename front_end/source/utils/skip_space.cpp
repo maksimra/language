@@ -1,7 +1,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include "../include/utils/skip_space.hpp"
+#include "utils/skip_space.hpp"
 
 bool skip_space(char **str)
 {

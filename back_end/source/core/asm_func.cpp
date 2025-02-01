@@ -1,4 +1,5 @@
-#include "../../../front_end/include/core/lexer.hh" // TODO: НАСТРОИТЬ ПУТИ В CMAKE, !ЗАТЕМ!сделать общий cmake для всего проекта
+#include <stdio.h>
+#include "lexer.hpp"
 
 #define PRINT_ASM(str) fprintf(output_file, str)
 
@@ -12,7 +13,7 @@ void asm_sub (FILE* output_file)
     PRINT_ASM("sub\n");
 }
 
-void asm_mul (FILE* output_file);
+void asm_mul (FILE* output_file)
 {
     PRINT_ASM("mul\n");
 }

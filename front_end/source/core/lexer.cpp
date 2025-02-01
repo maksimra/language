@@ -6,10 +6,10 @@
 #include <stdlib.h>
 #include <cstdint>
 
-#include "../include/core/lexer.hpp"
-#include "../include/utils/skip_space.hpp"
-#include "../include/utils/dyn_array.hpp"
-#include "../include/io/print_in_log.hpp"
+#include "lexer.hpp"
+#include "utils/skip_space.hpp"
+#include "dyn_array.hpp"
+#include "io/print_in_log.hpp"
 
 #define VAR_NAME ((Var*) vars->data + var_number)->name
 

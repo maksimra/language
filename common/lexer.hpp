@@ -1,7 +1,7 @@
 #ifndef LEXER_HPP
 #define LEXER_HPP
 
-#include "../utils/dyn_array.hpp"
+#include "dyn_array.hpp"
 
 enum LexError
 {
@@ -45,9 +45,23 @@ struct LexOpers
     bool is_func;
 
     #ifdef BACKEND
-    void (*asm) (FILE* output_file);
+    void (*gen_asm) (FILE* output_file);
     #endif
 };
+
+#ifdef BACKEND
+void asm_add    (FILE* output_file);
+void asm_sub    (FILE* output_file);
+void asm_mul    (FILE* output_file);
+void asm_div    (FILE* output_file);
+void asm_pow    (FILE* output_file);
+void asm_assign (FILE* output_file);
+void asm_sin    (FILE* output_file);
+void asm_cos    (FILE* output_file);
+void asm_ln     (FILE* output_file);
+void asm_sqrt   (FILE* output_file);
+void asm_exp    (FILE* output_file);
+#endif
 
 const LexOpers OPERS[] =
 {
@@ -80,19 +94,6 @@ const LexOpers OPERS[] =
     #endif
 };
 
-#ifdef BACKEND
-void asm_add    (FILE* output_file);
-void asm_sub    (FILE* output_file);
-void asm_mul    (FILE* output_file);
-void asm_div    (FILE* output_file);
-void asm_pow    (FILE* output_file);
-void asm_assign (FILE* output_file);
-void asm_sin    (FILE* output_file);
-void asm_cos    (FILE* output_file);
-void asm_ln     (FILE* output_file);
-void asm_sqrt   (FILE* output_file);
-void asm_exp    (FILE* output_file);
-#endif
 
 const int NUM_OPERS = sizeof (OPERS) / sizeof (OPERS[0]);
 
