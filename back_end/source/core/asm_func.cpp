@@ -31,7 +31,9 @@ void asm_pow (FILE* output_file)
 void asm_assign (FILE* output_file)
 {
     PRINT_ASM("pop rax\n"
-              "pop [rax]\n");
+              "pop rbx\n"
+              "push rax\n"
+              "pop [rbx]\n");
 }
 
 void asm_sin (FILE* output_file)

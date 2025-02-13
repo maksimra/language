@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "core/back_end.hpp"
 #include "io/print_in_log.hpp"
+#include "io/print_svg.hpp"
 #include "file_processing.hpp"
 #include "lexer.hpp"
 
@@ -20,6 +21,7 @@ void backend_print_error(BackError error)
 
 const char *backend_get_error(BackError error)
 {
+    printf ("OUR ERROR = %d\n", error);
     switch (error)
     {
     case BACK_ERROR_OK:
@@ -47,7 +49,9 @@ BackError backend_ctor(BackInfo* back, const char* name_of_input_file, const cha
 
     BackError     back_error      = BACK_ERROR_OK;
     ProcFileError proc_file_error = PROC_FILE_NO_ERROR;
+    GraphError    graph_error     = GRAPH_ERROR_OK;
     Node* root_syntax_tree = NULL;
+    char* buffer_ptr = NULL;
 
     back->output_file = fopen(name_of_output_file, "wb");
     if (back->output_file == NULL)
@@ -67,13 +71,17 @@ BackError backend_ctor(BackInfo* back, const char* name_of_input_file, const cha
         goto close_all_files;
     }
 
-    root_syntax_tree = create_tree(back->input_buffer,
+    buffer_ptr = back->input_buffer; // TODO: спросить, не костыль ли
+    root_syntax_tree = create_tree(&buffer_ptr,
                                    back->input_buffer + back->size_of_file,
                                    &back_error);
-
     if (back_error)
         goto delete_tree;
     back->root = root_syntax_tree;
+
+    graph_error = graphviz (back->root); // TODO: создаёт файл не там, где надо, пофиксить
+    if (graph_error)
+        goto delete_tree;
 
     goto out;
 
@@ -87,40 +95,43 @@ out:
     return back_error;
 }
 
-Node* create_tree(const char* buffer, const char* buf_end, BackError* error)
+Node* create_tree(char** buffer, const char* buf_end, BackError* error)
 {
     assert (buffer);
     assert (buf_end);
 
     const int necessary_received_number = 2;
 
-    if (*buffer != '#')
+    if (**buffer != '#')
     {
-        *error = BACK_ERROR_READ;
+        printf ("Не можем дальше парсить\n");
         return NULL;
     }
-    buffer++;
+    (*buffer)++;
 
     int type = 0;
     double value = 0;
 
     int received_length = 0;
-    int number_received = sscanf(buffer, "%d#%lf%n", &type, &value, &received_length);
+    printf ("buffer = %s\n", *buffer);
+    int number_received = sscanf(*buffer, "%d#%lf%n", &type, &value, &received_length);
     if (number_received != necessary_received_number)
     {
         *error = BACK_ERROR_SSCANF;
         return NULL;
     }
 
-    buffer += received_length;
+    (*buffer) += received_length;
 
     TreeError tree_error = TREE_ERROR_OK;
-    if (buffer < buf_end && *buffer == '_')
+    if (*buffer < buf_end && **buffer == '_')
     {
-        buffer++;
-        if (buffer < buf_end && *buffer == '_')
+        printf ("Нет левого дитя\n");
+        (*buffer)++;
+        if (*buffer < buf_end && **buffer == '_')
         {
-            buffer++;
+            printf ("Нет ещё и правого дитя\n");
+            (*buffer)++;
             Node* node = create_node((LexType) type, value, NULL, NULL, &tree_error);
             if (tree_error)
             {
@@ -130,6 +141,7 @@ Node* create_tree(const char* buffer, const char* buf_end, BackError* error)
 
             return node;
         }
+        printf ("Есть правый ребёнок\n");
         Node* node =  create_node((LexType) type, value,
                                   NULL,
                                   create_tree(buffer, buf_end, error), &tree_error);
@@ -142,9 +154,13 @@ Node* create_tree(const char* buffer, const char* buf_end, BackError* error)
         return node;
     }
 
+    printf ("Есть оба ребёнка\n");
+    Node* left_son  = create_tree(buffer, buf_end, error);
+    Node* right_son = create_tree(buffer, buf_end, error);
+
     Node* node = create_node((LexType) type, value,
-                             create_tree(buffer, buf_end, error),
-                             create_tree(buffer, buf_end, error), &tree_error);
+                             left_son,
+                             right_son, &tree_error);
     if (tree_error)
     {
         *error = BACK_ERROR_TREE;
@@ -162,11 +178,12 @@ BackError backend_pass (BackInfo* back)
 BackError create_asm_file(FILE* output_file, Node* node, Node* parent)
 {
     BackError error = BACK_ERROR_OK;
-    if (node->right != NULL)
-        error = create_asm_file(output_file, node->right, node);
-
+    printf ("type = %d\n", node->elem.type);
     if (node->left != NULL)
         error = create_asm_file(output_file, node->left, node);
+
+    if (node->right != NULL)
+        error = create_asm_file(output_file, node->right, node);
 
     switch (node->elem.type)
     {
@@ -181,6 +198,7 @@ BackError create_asm_file(FILE* output_file, Node* node, Node* parent)
             if (parent->elem.elem.oper == LEX_OPER_ASSIGN &&
                 node == parent->left)
                 fprintf(output_file, "push %zu\n", node->elem.elem.var_number);
+
             else
                 fprintf(output_file, "push [%zu]\n", node->elem.elem.var_number);
 

@@ -30,7 +30,7 @@ void        backend_print_error  (BackError error);
 const char* backend_get_error    (BackError error);
 BackError   backend_ctor         (BackInfo* back, const char* name_of_input_file, const char* name_of_output_file);
 BackError   backend_pass         (BackInfo* back);
-Node*       create_tree          (const char* buffer, const char* buf_end, BackError* error);
+Node*       create_tree          (char** buffer, const char* buf_end, BackError* error);
 BackError   create_asm_file      (FILE* output_file, Node* node, Node* parent);
 void        backend_dtor         (BackInfo* back);
 

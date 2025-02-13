@@ -7,7 +7,7 @@ int main (const int argc, const char* argv[])
 {
     int exit_code = EXIT_SUCCESS;
 
-    FILE* log_file = fopen ("log_file.txt", "w");
+    FILE* log_file = fopen ("log_file.txt", "w"); //  TODO: спросить, почему создаётся в самой общей папке
     if (log_file == NULL)
         fprintf (stderr, "log_file wasn't open.\n");
 
