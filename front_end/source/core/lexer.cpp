@@ -28,6 +28,7 @@ LexError get_token (Darray* tokens, Darray* vars, char* input_buffer) // TODO: �
             try_delim          (tokens, &(input_buffer), &error) ||
             try_digit          (tokens, &(input_buffer), &error) ||
             try_parenthesis    (tokens, &(input_buffer), &error) ||
+            try_keyword        (tokens, &(input_buffer), &error) ||
             try_function       (tokens, &(input_buffer), &error) ||
             try_var            (tokens, vars, &(input_buffer), &error))
         {
@@ -79,6 +80,25 @@ bool try_var (Darray* tokens, Darray* vars, char** buffer, LexError* error)
     return false;
 }
 
+bool try_keyword (Darray* tokens, char** buffer, LexError* error)
+{
+    if (isalpha (**buffer)) // TODO: спросить, ничего ли, что много одинаковых функций, который просто работают с разными данными
+    {
+        size_t len_of_keyword = 1;
+        while (isalpha ((*buffer)[len_of_keyword]))
+            len_of_keyword++;
+
+        LexKeyword keyword = search_keyword (*buffer, len_of_keyword);
+        if (keyword != LEX_KEYWORD_NONE)
+        {
+            (*buffer) += len_of_keyword;
+            *error = fill_token_keyword (tokens, keyword);
+            return true;
+        }
+    }
+    return false;
+}
+
 bool try_function (Darray* tokens, char** buffer, LexError* error)
 {
     if (isalpha (**buffer))
@@ -103,8 +123,8 @@ bool try_parenthesis (Darray* tokens, char** buffer, LexError* error)
     char next_symbol = **buffer;
     if (next_symbol == '(' || next_symbol == ')')
     {
-        LexElem elem = {.symbol = next_symbol};
-        LexInfo token = {LEX_TYPE_TXT, elem};
+        LexElem elem = {.brace = next_symbol};
+        LexInfo token = {LEX_TYPE_BRACE, elem};
 
         DynArrError stk_error = dyn_array_push (tokens, &token);
         if (stk_error)
@@ -168,8 +188,8 @@ void token_dump (const Darray* tokens, const Darray* vars) // TODO: исправ
             case LEX_TYPE_VAR:
                 printf ("VAR: %zu --> %.*s\n", pass, (int) ((Var*) vars->data + (((LexInfo*) tokens->data + pass)->elem.var_number))->len, ((Var*) vars->data + (((LexInfo*) tokens->data + pass)->elem.var_number))->name);
                 break;
-            case LEX_TYPE_TXT:
-                printf ("TXT: %zu --> %c\n",   pass, ((LexInfo*) tokens->data + pass)->elem.symbol);
+            case LEX_TYPE_BRACE:
+                printf ("TXT: %zu --> %c\n",   pass, ((LexInfo*) tokens->data + pass)->elem.brace);
                 break;
             case LEX_TYPE_DELIM:
                 printf ("DELIM: %zu --> %s\n", pass, DELIMS[(int) ((LexInfo*) tokens->data + pass)->elem.delim].name);
@@ -178,6 +198,17 @@ void token_dump (const Darray* tokens, const Darray* vars) // TODO: исправ
                 assert (0);
         }
     }
+}
+
+LexKeyword search_keyword (char* str, size_t len)
+{
+    for (int n_keyword = 1; n_keyword < NUM_KEYWORDS; n_keyword++)
+    {
+        if (strncmp (str, KEYWORDS[n_keyword].name, len) == 0)
+            return KEYWORDS[n_keyword].keyword_enum;
+    }
+
+    return LEX_KEYWORD_NONE;
 }
 
 LexOperator search_oper (char* str, size_t len)
@@ -216,15 +247,30 @@ LexError fill_new_var (Darray* vars, char* name, size_t len)
     return LEX_ERROR_OK;
 }
 
+LexError fill_token_keyword (Darray* tokens, LexKeyword keyword)
+{
+    LexElem elem  = {.keyword = keyword};
+    LexInfo token = {LEX_TYPE_KEYWORD, elem};
+
+    DynArrError error = dyn_array_push (tokens, &token);
+    if (error)
+    {
+        dyn_array_print_error (error);
+        return LEX_ERROR_DYN_ARR;
+    }
+
+    return LEX_ERROR_OK;
+}
+
 LexError fill_token_oper (Darray* tokens, LexOperator oper)
 {
-    LexElem elem = {.oper = oper};
+    LexElem elem  = {.oper = oper};
     LexInfo token = {LEX_TYPE_OPER, elem};
 
-    DynArrError stk_error = dyn_array_push (tokens, &token);
-    if (stk_error)
+    DynArrError error = dyn_array_push (tokens, &token);
+    if (error)
     {
-        dyn_array_print_error (stk_error);
+        dyn_array_print_error (error);
         return LEX_ERROR_DYN_ARR;
     }
 
@@ -236,10 +282,10 @@ LexError fill_token_delim (Darray* tokens, LexDelim delim)
     LexElem elem = {.delim = delim};
     LexInfo token = {LEX_TYPE_DELIM, elem};
 
-    DynArrError stk_error = dyn_array_push (tokens, &token);
-    if (stk_error)
+    DynArrError error = dyn_array_push (tokens, &token);
+    if (error)
     {
-        dyn_array_print_error (stk_error);
+        dyn_array_print_error (error);
         return LEX_ERROR_DYN_ARR;
     }
 
@@ -270,7 +316,7 @@ LexOperator search_char_operation (char* buffer)
 {
     for (int num_of_oper = 1; num_of_oper < NUM_OPERS; num_of_oper++)
     {
-        if (!OPERS[num_of_oper].is_func &&
+        if (OPERS[num_of_oper].len == 1 &&
             strncmp (buffer, OPERS[num_of_oper].name, sizeof (char)) == 0)
         {
             return OPERS[num_of_oper].op_enum;

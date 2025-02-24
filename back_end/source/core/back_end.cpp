@@ -207,7 +207,7 @@ BackError create_asm_file(FILE* output_file, Node* node, Node* parent)
             OPERS[(int) node->elem.elem.oper].gen_asm(output_file);
         case LEX_TYPE_DELIM:
             break; // TODO: может кринж, может вообще не работает
-        case LEX_TYPE_TXT:
+        case LEX_TYPE_BRACE:
         default:
             return BACK_ERROR_NODE_TYPE;
     }

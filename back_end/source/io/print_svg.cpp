@@ -113,7 +113,7 @@ GraphError draw_right (const Node* node, FILE* file)
                                DELIMS[(int) node->right->elem.elem.delim].name,
                                node->right, color);
                 break;
-            case LEX_TYPE_TXT:
+            case LEX_TYPE_BRACE:
             default:
                 return GRAPH_ERROR_NODE_TYPE;
         }
@@ -168,7 +168,7 @@ GraphError draw_left (const Node* node, FILE* file)
                                OPERS[(int) node->left->elem.elem.delim].name,
                                node->left, color);
                 break;
-            case LEX_TYPE_TXT:
+            case LEX_TYPE_BRACE:
             default:
                 return GRAPH_ERROR_NODE_TYPE;
         }

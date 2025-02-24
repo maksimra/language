@@ -31,7 +31,7 @@ Node* create_node (LexType type, double value, Node* left, Node* right, TreeErro
         case LEX_TYPE_DELIM:
             new_node->elem.elem.delim = (LexDelim) value;
             break;
-        case LEX_TYPE_TXT:
+        case LEX_TYPE_BRACE:
         default:
             *error = TREE_ERROR_TYPE;
             return NULL;

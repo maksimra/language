@@ -7,14 +7,15 @@
 #include "dyn_array.hpp"
 #include "io/print_in_log.hpp"
 
-#define CUR_TYPE   ((LexInfo*) tokens->data + *n_tok)->type
-#define CUR_OPER   ((LexInfo*) tokens->data + *n_tok)->elem.oper
-#define CUR_DEL    ((LexInfo*) tokens->data + *n_tok)->elem.delim
-#define CUR_SYMBOL ((LexInfo*) tokens->data + *n_tok)->elem.symbol
-#define CUR_NUMBER ((LexInfo*) tokens->data + *n_tok)->elem.num
-#define VAR_NUMBER ((LexInfo*) tokens->data + *n_tok)->elem.var_number
-#define PREV_OPER  ((LexInfo*) tokens->data + *n_tok - 1)->elem.oper
-#define PREV_TYPE  ((LexInfo*) tokens->data + *n_tok - 1)->type
+#define CUR_TYPE       ((LexInfo*) tokens->data + *n_tok)->type
+#define CUR_OPER       ((LexInfo*) tokens->data + *n_tok)->elem.oper
+#define CUR_DEL        ((LexInfo*) tokens->data + *n_tok)->elem.delim
+#define CUR_SYMBOL     ((LexInfo*) tokens->data + *n_tok)->elem.brace
+#define CUR_NUMBER     ((LexInfo*) tokens->data + *n_tok)->elem.num
+#define VAR_NUMBER     ((LexInfo*) tokens->data + *n_tok)->elem.var_number
+#define KEYWORD_NUMBER ((LexInfo*) tokens->data + *n_tok)->elem.keyword
+#define PREV_OPER      ((LexInfo*) tokens->data + *n_tok - 1)->elem.oper
+#define PREV_TYPE      ((LexInfo*) tokens->data + *n_tok - 1)->type
 
 static FILE* log_file = stderr;
 
@@ -26,7 +27,7 @@ Node* parse (const Darray* tokens, ParseError* error)
     size_t* n_tok = &cur_token_number; // TODO: подумать, как убрать
     do
     {
-        Node* node = get_assign (tokens, &cur_token_number, error);
+        Node* node = get_op (tokens, &cur_token_number, error);
         if (CUR_TYPE != LEX_TYPE_DELIM && CUR_DEL != LEX_DEL_SEMICOLON)
         {
             *error = PARSE_ERROR_SYNTAX;
@@ -61,6 +62,89 @@ Node* parse (const Darray* tokens, ParseError* error)
     } while (tokens->size > cur_token_number);
 
     return root;
+}
+
+Node* get_op (const Darray* tokens, size_t* n_tok, ParseError* error)
+{
+    if (CUR_TYPE == LEX_TYPE_DELIM &&
+        CUR_DEL == LEX_DEL_LEFT_BRACE)
+    {
+        (*n_tok)++;
+        Node* val = get_if_while (tokens, n_tok, error);
+        if (*error)
+            return NULL;
+
+        if (CUR_TYPE != LEX_TYPE_DELIM ||
+            CUR_TYPE == LEX_TYPE_DELIM && CUR_DEL != LEX_DEL_RIGHT_BRACE)
+        {
+            *error = PARSE_ERROR_SYNTAX;
+            return NULL;
+        }
+    }
+    return get_if_while (tokens, n_tok, error);
+}
+
+Node* get_if_while (const Darray* tokens, size_t* n_tok, ParseError* error)
+{
+    if (CUR_TYPE == LEX_TYPE_KEYWORD)
+    {
+        LexKeyword keyword_number = KEYWORD_NUMBER;
+        (*n_tok)++;
+        if (CUR_TYPE == LEX_TYPE_BRACE &&
+            CUR_SYMBOL == '(')
+        {
+            (*n_tok)++;
+
+            Node* left_node = get_assign (tokens, n_tok, error);
+            if (*error)
+                return NULL;
+
+            if (CUR_TYPE == LEX_TYPE_BRACE &&
+                CUR_SYMBOL == ')')
+            {
+                (*n_tok)++;
+
+                Node* right_node = get_op (tokens, n_tok, error);
+                if (*error)
+                    return NULL;
+            }
+            else
+            {
+                *error = PARSE_ERROR_SYNTAX;
+                return NULL;
+            }
+
+            TreeError tree_error = TREE_ERROR_OK;
+            Node* val = create_node (LEX_TYPE_KEYWORD, keyword_number,
+                                     left_node,
+                                     right_node, &tree_error);
+
+            if (tree_error)
+            {
+                tree_print_error (tree_error);
+                *error = PARSE_ERROR_TREE;
+                return NULL;
+            }
+
+            return val;
+        }
+    }
+
+    Node* val = get_assign (tokens, n_tok, error);
+    if (*error)
+        return NULL;
+
+    TreeError tree_error = TREE_ERROR_OK;
+    Node* semicolon_node = create_node (LEX_TYPE_DELIM, LEX_DEL_SEMICOLON,
+                                        val, NULL, &tree_error);
+    if (tree_error)
+    {
+        tree_print_error (tree_error);
+        *error = PARSE_ERROR_TREE;
+        return NULL;
+    }
+
+    return semicolon_node;
 }
 
 Node* get_assign (const Darray* tokens, size_t* n_tok, ParseError* error)
@@ -214,7 +298,7 @@ Node* try_func (const Darray* tokens, size_t* n_tok, ParseError* error)
             return NULL;
         }
 
-        if (CUR_TYPE == LEX_TYPE_TXT && CUR_SYMBOL != '(')
+        if (CUR_TYPE == LEX_TYPE_BRACE && CUR_SYMBOL != '(')
         {
             *error = PARSE_ERROR_SYNTAX;
             fprintf (stderr, "Введено некорректное выражение:"
@@ -226,7 +310,7 @@ Node* try_func (const Darray* tokens, size_t* n_tok, ParseError* error)
         (*n_tok)++;
         Node* val = get_expr (tokens, n_tok, error);
 
-        if (CUR_TYPE == LEX_TYPE_TXT && CUR_SYMBOL != ')')
+        if (CUR_TYPE == LEX_TYPE_BRACE && CUR_SYMBOL != ')')
         {
             *error = PARSE_ERROR_SYNTAX;
             return NULL;
@@ -276,12 +360,12 @@ Node* try_func (const Darray* tokens, size_t* n_tok, ParseError* error)
 
 Node* try_parenthesis (const Darray* tokens, size_t* n_tok, ParseError* error)
 {
-    if (CUR_TYPE == LEX_TYPE_TXT && CUR_SYMBOL == '(')
+    if (CUR_TYPE == LEX_TYPE_BRACE && CUR_SYMBOL == '(')
     {
         (*n_tok)++;
         Node* val = get_expr (tokens, n_tok, error);
 
-        if (CUR_TYPE == LEX_TYPE_TXT && CUR_SYMBOL != ')')
+        if (CUR_TYPE == LEX_TYPE_BRACE && CUR_SYMBOL != ')')
         {
             *error = PARSE_ERROR_SYNTAX;
             return NULL;
@@ -435,7 +519,7 @@ ParseError get_text_tree (const Node* node, char* text_tree, size_t* text_size)
                 (*text_size) += length;
                 break;
             }
-            case LEX_TYPE_TXT:
+            case LEX_TYPE_BRACE:
             default:
                 return PARSE_ERROR_SYNTAX;
         }
